@@ -16,3 +16,9 @@ export function formatLeadTime(days: number | null | undefined, language: Langua
     if (days <= 3) return `${days * 24}h`;
     return language === "fr" ? `${days} jours` : `${days} days`;
 }
+
+/** "-20%" when the old price is higher, else null. */
+export function discountPercent(price: number | null | undefined, oldPrice: number | null | undefined): string | null {
+    if (!price || !oldPrice || oldPrice <= price) return null;
+    return `-${Math.round((1 - price / oldPrice) * 100)}%`;
+}

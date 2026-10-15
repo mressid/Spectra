@@ -1,6 +1,7 @@
-# Accessories storefront
+# Storefront
 
-Customer website of the accessories store: Next.js 16 (App Router, Cache Components), Tailwind 4.
+Customer website of the shop template: Next.js 16 (App Router, Cache Components), Tailwind 4. General purpose:
+the catalogue, options (sizes, colours, capacities…), homepage and words come from the admin.
 Reads the public API of [`../accessories-store-system`](../accessories-store-system) (Spring Boot).
 
 ## Run

@@ -10,7 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Storefront rules
 
-Customer website of a small Tunisian accessories shop. The API and admin live in
+Customer website of a general-purpose shop template (small shops, Tunisia first). Never assume one kind
+of product: option names, categories and texts come from the admin. The API and admin live in
 `../accessories-store-system` (Spring Boot + React-Admin); this project only reads its public API.
 
 Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look and words),

@@ -12,65 +12,41 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
 - [x] Design tokens (`globals.css`), Inter, `formatMoney` / `formatLeadTime`.
 - [x] Skeleton homepage: top banner, product sections, footer line (proves cache + images work).
 
-## 1. Backend first (small, unblock everything)
+## 1. Backend (done 2026-10-15, in ../accessories-store-system)
 
-- [ ] **API-1 Prices in lists.** Add `priceFrom`, `compareAtPriceFrom`, `priceVaries` (lowest active variant)
-      to `ProductResponseDto`, filled in product lists, related products and homepage sections without N+1
-      queries. Integration test. Then `npm run api:spec && npm run api:types` here.
-- [ ] **API-2 Visible only for the public.** Anonymous `GET` on products, categories, collections returns
-      only active items; reviews only approved ones. The admin (ADMIN/STAFF token) still sees everything. Test both.
-- [ ] **API-4 Shop filters.** `/products`: `sortBy=price` (on `priceFrom`), `minPrice`, `maxPrice`, `inStock=true`.
-- [ ] **API-5 Sitemap feed.** `GET /api/v1/storefront/sitemap`: `{ products, categories, collections, bundles }`
-      each `[{ slug, updatedAt }]`, visible only. Public.
-- [ ] **API-3 Refresh the website.** A listener on the existing domain events (`common/events`, see how
-      `AuditLogListener` subscribes) that POSTs `{ tags }` to `${STOREFRONT_URL}/api/revalidate` with
-      `X-Revalidate-Secret`, after commit, async, never failing the admin action (log and continue). Tag mapping
-      in this repo's docs/API.md, "Refreshing the cache". Config: `store.storefront-url`, `store.revalidate-secret`
-      (empty URL = disabled). Unit-test the event → tags mapping.
+- [x] **API-1** `priceFrom`, `compareAtPriceFrom`, `priceVaries` on products, batched.
+- [x] **API-2** anonymous callers only get visible products, categories, collections and approved reviews.
+- [x] **API-3** the API POSTs changed cache tags to `/api/revalidate`, batched every 3 s
+      (`STOREFRONT_URL`, `STOREFRONT_REVALIDATE_SECRET`). Verified: an order marks its product page stale.
+- [x] **API-4** `sortBy=price`, `minPrice`, `maxPrice`, `inStock=true` on `/products`.
+- [x] **API-5** `GET /api/v1/storefront/sitemap`.
 
-## 2. Shell
+## 2–6. Pages (done 2026-10-15)
 
-- [ ] Header: rotating top banner, shop name, category menu (drawer on phones), cart icon with count.
-- [ ] Footer from `/storefront/home` `footer` (about, contact, WhatsApp link `https://wa.me/<digits>`, socials, columns).
-- [ ] `not-found.tsx` and `error.tsx` in the store's style.
+- [x] Header (rotating banner, categories drawer on phones, search, cart count), footer from the admin.
+- [x] Homepage: every section type (products grid/row, carousel with phone image, categories, brands,
+      bundles, Markdown text), `Store` JSON-LD.
+- [x] Category, collection, tag and search pages: sort, "available only", pagination in the URL; breadcrumb JSON-LD.
+- [x] Product page: gallery, option picker (names from the admin), quantity, personalisation, add to cart,
+      order now, delivery line, description, long-description blocks, specifications, reviews, related,
+      `Product` JSON-LD with one offer per variant.
+- [x] Bundle page with a variant choice per product.
+- [x] Cart (localStorage), guest checkout through Server Actions (promo code, fee per governorate,
+      field errors), confirmation with the server's totals, order tracking and cancel.
+- [x] `sitemap.xml`, `robots.txt`, `noindex` on cart, checkout, search, tracking; 404 and error pages.
 
-## 3. Homepage
+## 7. Next
 
-- [ ] Every section type in order: PRODUCTS (grid / row), CAROUSEL (5:2, 4:5 on phones, no autoplay when
-      reduced motion), CATEGORIES tiles, BRANDS logos, BUNDLES cards, TEXT (Markdown → sanitised HTML).
-- [ ] `ProductCard` with price (needs API-1), old price, discount badge, availability.
-- [ ] Metadata + `Organization` JSON-LD.
-
-## 4. Catalogue pages
-
-- [ ] `/categories/[slug]`: title, subcategories, product grid, sort and pagination in the URL, breadcrumb (+ JSON-LD).
-- [ ] `/collections/[slug]`, `/tags/[slug]`, `/sections/[slug]` (homepage "see all") reusing the same grid.
-- [ ] `/search?q=` (per request, `noindex`).
-
-## 5. Product page (the most important page)
-
-- [ ] `/products/[slug]` with `generateStaticParams`: gallery, name, price, availability, option picker,
-      quantity, personalisation text when allowed, order button, delivery line, description
-      (Markdown/HTML/text, sanitised), long-description blocks, specifications, reviews, related products.
-- [ ] Variant choice updates price, availability and photos without a page reload (client component fed by
-      the server-loaded variants; no client fetching).
-- [ ] Metadata, Open Graph image, `Product` + `BreadcrumbList` JSON-LD.
-- [ ] `/bundles/[slug]`: products of the bundle, a variant picker per product with variants, saving shown.
-
-## 6. Cart and checkout (client side, guest)
-
-- [ ] Cart in `localStorage` (variant lines and bundle lines), drawer + `/cart` page, re-reads prices and
-      availability from the API when opened.
-- [ ] `/checkout`: name, phone, governorate (select), city, street, notes, promo code (`coupon-check`),
-      summary; submit to `POST /checkout/orders` through a Server Action (keeps the API URL server-side).
-      Field errors under fields, 409 stock messages shown on the line.
-- [ ] `/orders/[number]` confirmation with the server's totals; "Suivre ma commande" page (number + phone),
-      cancel while new or confirmed.
-
-## 7. SEO and performance pass
-
-- [ ] `sitemap.ts` (needs API-5), `robots.ts`, canonical URLs, `noindex` where listed in docs/RENDERING.md.
-- [ ] Lighthouse mobile on the production build: LCP < 2.5 s, CLS < 0.1; fix what fails.
+- [ ] Lighthouse mobile on the production build for /, a category and a product page; fix what misses
+      the budget in docs/RENDERING.md (watch the carousel's first image and the product photo).
+- [ ] Homepage section "Tout voir" pages (`/sections/[slug]`): the API needs the section's product source
+      in `HomeSectionDto` (or an endpoint returning a section's products by slug, paged).
+- [ ] Variant photos: when a variant is chosen, show its own photos (`/media?variantId=`) first.
+- [ ] Cart: re-read prices and availability when the cart opens (a product page may have changed since),
+      and show a line's 409 "sold out" message from checkout on that line.
+- [ ] Order confirmation as its own page that survives a reload (today it is shown in place).
+- [ ] Generic template pass on the backend and admin: demo data, helper texts and examples still talk about
+      jewellery (rings, "Silver 925", "engraving"). Replace with neutral examples.
 
 ## Later (ask the owner first)
 

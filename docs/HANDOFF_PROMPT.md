@@ -7,7 +7,8 @@ keeps the context small and the result focused.
 ## First session
 
 ```text
-You are continuing the storefront of a small Tunisian accessories shop (Next.js 16, Tailwind 4).
+You are continuing the storefront of a general-purpose shop template for small shops, Tunisia first
+(Next.js 16, Tailwind 4). Never assume one product type in code, words or examples.
 The skeleton is done. Before writing code, read AGENTS.md, then docs/ROADMAP.md, docs/DESIGN.md,
 docs/RENDERING.md and docs/API.md. Next.js 16 differs from what you know: read the guide in
 node_modules/next/dist/docs/ for any Next API you use (caching, metadata, images, route handlers).

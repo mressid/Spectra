@@ -1380,6 +1380,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/storefront/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sitemap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/storefront/home": {
         parameters: {
             query?: never;
@@ -2057,6 +2073,9 @@ export interface components {
             availability: "IN_STOCK" | "ON_ORDER" | "OUT_OF_STOCK";
             /** Format: int32 */
             leadTimeDays?: number;
+            priceFrom?: number;
+            compareAtPriceFrom?: number;
+            priceVaries: boolean;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -3245,6 +3264,17 @@ export interface components {
         PagedModelTagResponseDto: {
             content?: components["schemas"]["TagResponseDto"][];
             page?: components["schemas"]["PageMetadata"];
+        };
+        SitemapDto: {
+            products: components["schemas"]["SitemapEntry"][];
+            categories: components["schemas"]["SitemapEntry"][];
+            collections: components["schemas"]["SitemapEntry"][];
+            bundles: components["schemas"]["SitemapEntry"][];
+        };
+        SitemapEntry: {
+            slug: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         HomePageDto: {
             announcements: components["schemas"]["AnnouncementResponseDto"][];
@@ -5973,6 +6003,9 @@ export interface operations {
                 tagId?: string;
                 categoryId?: string;
                 collectionId?: string;
+                minPrice?: number;
+                maxPrice?: number;
+                inStock?: boolean;
                 page?: number;
                 size?: number;
                 sortBy?: string;
@@ -7595,6 +7628,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["OrderResponseDto"];
+                };
+            };
+        };
+    };
+    sitemap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SitemapDto"];
                 };
             };
         };

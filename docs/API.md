@@ -24,8 +24,8 @@ Never hand-write a type that exists in the schema: use `Schemas["ProductResponse
   (`src/lib/format.ts`); never do arithmetic for a total the customer pays: the server computes it.
 - **Pages.** Lists are Spring pages: `{ content: [...], page: { size, number, totalElements, totalPages } }`,
   `page` starts at **0**. Params: `page`, `size`, `sortBy`, `sortDirection` (`ASC`/`DESC`).
-- **Visible items only.** Public list endpoints also return hidden items. Always pass `isActive=true`
-  (products, categories, collections) and `isApproved=true` (reviews). Backend task API-2 removes this trap.
+- **Visible items only.** Anonymous callers only ever get visible products, categories, collections and
+  approved reviews (hidden ones answer 404). `catalog.ts` still sends `isActive=true` to be explicit.
 - **Images** are full URLs on the store's MinIO bucket (`MEDIA_URL`). Render them with `next/image`.
 - **No auth.** The storefront uses public endpoints only. Customer accounts exist in the API
   (`/auth/register`, `/auth/login`) but checkout works without one; keep it guest-first.
@@ -39,6 +39,7 @@ Never hand-write a type that exists in the schema: use `Schemas["ProductResponse
 | `GET /storefront/home` | `HomePageDto`: `announcements` (visible top-banner messages, in order), `sections` (homepage sections in order, each with its content already resolved), `footer` | Homepage, top banner and footer on every page |
 | `GET /store-settings` | delivery fee, free-delivery threshold, fee per governorate, `languages`, `defaultLanguage`, shop name, stamp duty | Delivery info on product page and cart; languages offered |
 | `GET /checkout/governorates` | the 24 Tunisian governorates, official spelling | Address form: a select, never free text |
+| `GET /storefront/sitemap` | `{ products, categories, collections, bundles }`, each `[{ slug, updatedAt }]`, visible only | `sitemap.xml`, `generateStaticParams` |
 
 Homepage section types (`HomeSectionDto.type`), all in `sections[]`:
 
@@ -55,7 +56,7 @@ Homepage section types (`HomeSectionDto.type`), all in `sections[]`:
 
 | Call | Notes |
 |---|---|
-| `GET /products?isActive=true&…` | Filters: `categoryId`, `collectionId`, `tag` (tag slug), `tagId`, `brandId`, `nameContains`, `slug`. Sort: `createdAt`, `name`. **No price yet** (task API-1). |
+| `GET /products?isActive=true&…` | Filters: `categoryId`, `collectionId`, `tag` (tag slug), `tagId`, `brandId`, `nameContains`, `slug`, `minPrice`, `maxPrice`, `inStock=true`. Sort: `createdAt`, `name`, `price` (lowest variant price). Each product has `priceFrom`, `compareAtPriceFrom`, `priceVaries`. |
 | `GET /products?slug=<slug>&isActive=true&size=1` | Product page lookup by URL slug (`getProductBySlug`). |
 | `GET /products/{id}/related` | Up to 8 suggestions: shared categories, then tags and brand, closest price. Already visible-only. |
 | `GET /products/{id}/attributes` | Specifications as rows (`attributeName`, `value`, `sortOrder`): show as "Matière : Argent 925" lines in `sortOrder`. |
@@ -108,13 +109,7 @@ Tag names are in `src/lib/api/tags.ts`:
 | Store settings (delivery fees, languages) | `settings`, `home` |
 | Review approved or removed | `reviews:<productId>` |
 
-## Backend gaps (tasks in docs/ROADMAP.md)
+## Backend gaps
 
-- **API-1**: product lists and homepage product sections have no price. Add `priceFrom` (lowest active
-  variant price), `compareAtPriceFrom`, `priceVaries` to `ProductResponseDto`.
-- **API-2**: public lists return hidden products and unapproved reviews unless filtered; anonymous callers
-  should only ever get visible ones.
-- **API-3**: call the website's `POST /api/revalidate` from the existing domain events.
-- **API-4**: `sortBy=price` and a price range filter on `/products`, `inStock=true` filter.
-- **API-5**: a sitemap feed: `GET /storefront/sitemap` with every visible product, category, collection,
-  bundle slug and its `updatedAt`.
+All five gaps found when the skeleton was made (prices in lists, visible-only, page refresh, shop filters,
+sitemap) are done. Open ones are listed in docs/ROADMAP.md, "Next".

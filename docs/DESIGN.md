@@ -1,11 +1,13 @@
 # Storefront design system
 
-A small Tunisian accessories shop (jewellery, watches, bags). Most customers arrive from an Instagram or
-WhatsApp link on a phone, browse a few products and order with **cash on delivery**, without an account.
+A template for small shops (any kind of product: fashion, beauty, home, electronics…), Tunisia first.
+Most customers arrive from an Instagram or WhatsApp link on a phone, browse a few products and order with
+**cash on delivery**, without an account. Nothing in the design may assume one product type: no fixed
+"size" or "colour" wording (option names come from the admin), no category-specific icons or examples.
 The design has one job: make the product look good and make ordering feel safe and easy.
 
 The look continues the store preview already in the admin
-(`../accessories-store-system/admin/src/components/ProductPreview.tsx`); open it next to this file.
+(`../accessories-store-system/admin/src/components/ProductPreview.tsx`, the backend and admin repo); open it next to this file.
 
 ## 1. Principles
 
@@ -71,7 +73,7 @@ Sentence case everywhere. No uppercase headings, no letter spacing.
 | **Availability line** | `● En stock` (green), `⏳ Sur commande · prêt en 48h` (amber), `Épuisé` (muted). |
 | **Primary button** | `bg-ink text-white rounded-control py-3 font-semibold w-full` on phones. One per screen: "Commander · paiement à la livraison". Disabled state `bg-surface text-muted`. |
 | **Secondary button** | `border border-ink rounded-control` (e.g. "Ajouter au panier" if both exist). |
-| **Option picker** | One row per option (Taille, Couleur): outlined boxes `border-field rounded-control px-3 py-2`; chosen = `bg-ink text-white border-ink`; impossible combination = `text-faint line-through`. Until every option is chosen, the order button says "Choisissez taille et couleur". |
+| **Option picker** | One row per option, named in the admin (Taille, Couleur, Capacité…): outlined boxes `border-field rounded-control px-3 py-2`; chosen = `bg-ink text-white border-ink`; impossible combination = `text-faint line-through`. Until every option is chosen, the order button names what is missing ("Choisissez taille et couleur"), from the option names. |
 | **Gallery** | Main photo square, thumbnails square in a row (scrollable on phones); swipe on phones. Variant photos replace the gallery when a variant is chosen. |
 | **Delivery line** | Under the button: "🚚 Livraison 7,000 DT · gratuite dès 150,000 DT · paiement à la livraison" from store settings. |
 | **Inputs** | Label above, `border-field rounded-control px-3 py-3 text-base`, focus ring `stock`. Error text under the field in `sale`. Phone input with `inputMode="tel"`. Governorate is a select of the 24 governorates. |
