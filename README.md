@@ -1,13 +1,13 @@
-# Storefront
+# Spectra
 
-The customer website of the shop template: a fast, SEO-friendly shop for small stores, Tunisia first
+The storefront of the shop template: a fast, SEO-friendly shop for small stores, Tunisia first
 (prices in TND, guest checkout, cash on delivery). French and English, light and dark theme.
 
 It is the front half of a two-part project:
 
 | Part | Repository | What it does |
 |---|---|---|
-| **Storefront** (this repo) | `accessories-storefront` | What customers see: homepage, catalogue, product pages, cart, checkout, order tracking |
+| **Spectra** (this repo, the storefront) | [mressid/Spectra](https://github.com/mressid/Spectra) | What customers see: homepage, catalogue, product pages, cart, checkout, order tracking |
 | **Backend + admin** | [mressid/accessories-store-system](https://github.com/mressid/accessories-store-system) | Spring Boot API, PostgreSQL, MinIO for photos, and the React-Admin dashboard where the shop owner manages products, orders, stock, homepage and settings |
 
 The storefront has no database of its own. Everything it shows comes from the backend's public API, and
