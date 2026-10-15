@@ -6,6 +6,9 @@ const media = new URL(process.env.MEDIA_URL ?? "http://localhost:9010");
 const extraHosts = (process.env.EXTRA_IMAGE_HOSTS ?? "").split(",").map((host) => host.trim()).filter(Boolean);
 
 const nextConfig: NextConfig = {
+    // NEXT_DIST_DIR lets a second build (tests, an AI assistant) run without replacing the files of a
+    // server already running from .next; a rebuild under a running `next start` breaks its pages and actions
+    distDir: process.env.NEXT_DIST_DIR ?? ".next",
     // 'use cache' + cacheTag; see docs/RENDERING.md
     cacheComponents: true,
     cacheLife: {

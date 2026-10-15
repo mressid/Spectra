@@ -29,7 +29,9 @@ Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look
   `getWords(lang)` (add every new word in French and English), money through `formatMoney(amount, lang)`.
 - **Theme and icons**: colours only through tokens (both themes), icons from lucide-react, no emoji or
   symbol characters (docs/DESIGN.md section 2).
-- **Before finishing**: `npm run typecheck && npm run lint && npm run build` must pass. Check a page at
+- **Before finishing**: `npm run typecheck && npm run lint && npm run build` must pass. If the owner's
+  server may be running, build into another folder (`NEXT_DIST_DIR=.next-check npm run build`): a build
+  replaces the files under a running `next start` and breaks its pages and checkout. Check a page at
   390 px and 1280 px width.
 - **Commits**: conventional commits (`feat(product): option picker`), a body that says why. No AI or tool
   attribution lines (no `Co-Authored-By`, no "Generated with"). Do not push unless asked.
