@@ -8,25 +8,79 @@
     --font-sans: var(--font-inter), system-ui, sans-serif;
 
     --color-ink: #111827; /* text, primary button, chosen option */
-    --color-muted: #6b7280; /* secondary text */
-    --color-faint: #9ca3af; /* old price, unavailable option */
-    --color-line: #e5e7eb; /* borders, dividers */
-    --color-field: #d1d5db; /* input and option borders */
-    --color-surface: #f3f4f6; /* image placeholders, quiet blocks */
+    --color-on-ink: #ffffff; /* text on an ink background */
+    --color-muted: #5f6673; /* secondary text */
+    --color-faint: #9aa1ab; /* old price, unavailable option */
+    --color-line: #e6e8ec; /* borders, dividers */
+    --color-field: #d2d6dc; /* input and option borders */
+    --color-surface: #f4f5f7; /* image placeholders, quiet blocks */
+    --color-raised: #ffffff; /* cards, drawers, the header */
     --color-page: #ffffff;
     --color-stock: #15805a; /* "In stock", the store accent */
+    --color-stock-soft: #e7f4ee;
     --color-order: #b45309; /* "Made to order · 48h" */
     --color-sale: #b91c1c; /* discount badge text, errors */
-    --color-sale-soft: #fee2e2; /* discount badge background */
+    --color-sale-soft: #fdecec; /* discount badge background */
 
-    --radius-photo: 10px; /* product photos, cards */
-    --radius-control: 8px; /* buttons, inputs, option boxes */
-    --radius-chip: 4px;
+    --radius-photo: 12px; /* product photos, cards */
+    --radius-control: 10px; /* buttons, inputs, option boxes */
+    --radius-chip: 6px;
+}
+
+/* dark: follows the phone unless the visitor chose a theme (data-theme on <html>, set before paint) */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --color-ink: #f1f3f5;
+        --color-on-ink: #111418;
+        --color-muted: #a3aab4;
+        --color-faint: #6d7480;
+        --color-line: #262b33;
+        --color-field: #3a414c;
+        --color-surface: #1a1e24;
+        --color-raised: #15191e;
+        --color-page: #0e1114;
+        --color-stock: #3ccf91;
+        --color-stock-soft: #11291f;
+        --color-order: #f2a23c;
+        --color-sale: #ff8a80;
+        --color-sale-soft: #3a1616;
+        color-scheme: dark;
+    }
+}
+:root[data-theme="dark"] {
+    --color-ink: #f1f3f5;
+    --color-on-ink: #111418;
+    --color-muted: #a3aab4;
+    --color-faint: #6d7480;
+    --color-line: #262b33;
+    --color-field: #3a414c;
+    --color-surface: #1a1e24;
+    --color-raised: #15191e;
+    --color-page: #0e1114;
+    --color-stock: #3ccf91;
+    --color-stock-soft: #11291f;
+    --color-order: #f2a23c;
+    --color-sale: #ff8a80;
+    --color-sale-soft: #3a1616;
+    color-scheme: dark;
+}
+:root[data-theme="light"] {
+    color-scheme: light;
 }
 
 body {
     background: var(--color-page);
     color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* admin-written rich text (descriptions, text sections), rendered from Markdown or HTML */

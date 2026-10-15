@@ -35,8 +35,23 @@ Defined once in `src/app/globals.css` (`@theme`). Use the Tailwind names, never 
 | `order` | `#B45309` | "Sur commande · prêt en 48h" |
 | `sale` / `sale-soft` | `#B91C1C` / `#FEE2E2` | Discount badge (text / background), form errors |
 
-Radii: `rounded-photo` 10 px (photos, cards), `rounded-control` 8 px (buttons, inputs, option boxes),
-`rounded-chip` 4 px. The site is **light only**.
+Also `on-ink` (text on an ink background), `raised` (cards, drawers, header) and `stock-soft` (accent
+background). Radii: `rounded-photo` 12 px (photos, cards), `rounded-control` 10 px (buttons, inputs,
+option boxes), `rounded-chip` 6 px.
+
+**Dark theme.** Every token has a dark value (`src/app/globals.css`). The site follows the phone's setting
+until the visitor uses the theme toggle; the choice is stored in `localStorage` and applied before the
+first paint by a small script in the layout. Write colours only through tokens, never `text-white` or
+hex values, so both themes stay right. Exceptions on purpose: text over photos (carousel, category
+tiles) is white, and brand logos sit on a white tile.
+
+**Icons.** [lucide-react](https://lucide.dev) only, outline style, `strokeWidth` 1.8, 16–22 px, always
+`aria-hidden` next to a visible word or with an `aria-label` on the button. **No emoji and no symbol
+characters** (no ●, ★, ✓, 🚚) anywhere in the interface. Social networks are named in words (lucide has no
+brand logos).
+
+**Shared classes.** Buttons and fields use `ui.primary`, `ui.secondary`, `ui.quiet`, `ui.input`,
+`ui.label`, `ui.card` from `src/components/ui.ts`.
 
 Colour carries meaning: green = available, amber = made to order, red = discount or error. Never use them as decoration.
 
@@ -101,6 +116,9 @@ Always `next/image` with real `alt` text (product name, or `altText` for slides)
 | Cart | Panier | Cart |
 | Free delivery from | Livraison gratuite dès | Free delivery from |
 | Order statuses | Nouvelle, Confirmée, Chez le livreur, Livrée, Refusée, Annulée | New, Confirmed, With the courier, Delivered, Refused, Cancelled |
+
+All of the website's own words live in `src/lib/words.ts`, French and English with the same keys
+(`getWords(lang)`). Product, category and section texts come from the admin as written.
 | Promo code | Code promo | Promo code |
 | Governorate | Gouvernorat | Governorate |
 

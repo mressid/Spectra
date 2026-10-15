@@ -25,7 +25,10 @@ Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look
 - **Styling**: Tailwind with the tokens in `src/app/globals.css` (`text-muted`, `bg-ink`, `rounded-photo`…).
   No raw hex in components, no UI component library.
 - **Images**: `next/image` with `alt` and `sizes`, never `<img>`.
-- **Money and words**: `formatMoney()`, `formatLeadTime()`; French texts from docs/DESIGN.md section 7.
+- **Languages**: every page is under `app/[lang]`; links go through `localPath(lang, path)`, words through
+  `getWords(lang)` (add every new word in French and English), money through `formatMoney(amount, lang)`.
+- **Theme and icons**: colours only through tokens (both themes), icons from lucide-react, no emoji or
+  symbol characters (docs/DESIGN.md section 2).
 - **Before finishing**: `npm run typecheck && npm run lint && npm run build` must pass. Check a page at
   390 px and 1280 px width.
 - **Commits**: conventional commits (`feat(product): option picker`), a body that says why. No AI or tool

@@ -1,26 +1,31 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { words } from "@/lib/words";
+import type { Language } from "@/lib/api/client";
+import { localPath } from "@/lib/i18n";
+import { getWords } from "@/lib/words";
 import { JsonLd } from "./JsonLd";
 
 export interface Crumb {
     name: string;
-    href: string;
+    // path without the language, e.g. "/categories/x"
+    path: string;
 }
 
-/** Accueil › Catégorie › Produit, with the BreadcrumbList Google reads. */
-export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
-    const all = [{ name: words.home, href: "/" }, ...crumbs];
+/** Home › Category › Product, with the BreadcrumbList Google reads. */
+export function Breadcrumb({ lang, crumbs }: { lang: Language; crumbs: Crumb[] }) {
+    const words = getWords(lang);
+    const all = [{ name: words.home, path: "/" }, ...crumbs];
     const site = process.env.SITE_URL ?? "http://localhost:3000";
     return (
-        <nav aria-label="Fil d'Ariane" className="mb-4 text-xs text-muted">
-            <ol className="flex flex-wrap gap-1">
+        <nav aria-label={words.breadcrumb} className="mb-5 text-xs text-muted">
+            <ol className="flex flex-wrap items-center gap-1">
                 {all.map((crumb, index) => (
-                    <li key={crumb.href} className="flex gap-1">
-                        {index > 0 && <span aria-hidden>›</span>}
+                    <li key={crumb.path} className="flex items-center gap-1">
+                        {index > 0 && <ChevronRight size={13} aria-hidden className="text-faint" />}
                         {index < all.length - 1 ? (
-                            <Link href={crumb.href} className="hover:text-ink">{crumb.name}</Link>
+                            <Link href={localPath(lang, crumb.path)} className="hover:text-ink">{crumb.name}</Link>
                         ) : (
-                            <span aria-current="page" className="text-ink">{crumb.name}</span>
+                            <span aria-current="page" className="line-clamp-1 text-ink">{crumb.name}</span>
                         )}
                     </li>
                 ))}
@@ -29,7 +34,7 @@ export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
                 data={{
                     "@context": "https://schema.org",
                     "@type": "BreadcrumbList",
-                    itemListElement: all.map((crumb, index) => ({ "@type": "ListItem", position: index + 1, name: crumb.name, item: `${site}${crumb.href}` })),
+                    itemListElement: all.map((crumb, index) => ({ "@type": "ListItem", position: index + 1, name: crumb.name, item: `${site}${localPath(lang, crumb.path)}` })),
                 }}
             />
         </nav>

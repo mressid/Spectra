@@ -35,6 +35,13 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
       field errors), confirmation with the server's totals, order tracking and cancel.
 - [x] `sitemap.xml`, `robots.txt`, `noindex` on cart, checkout, search, tracking; 404 and error pages.
 
+## Design pass (done 2026-10-15)
+
+- [x] French and English under `/fr` and `/en` (proxy, hreflang, sitemap per language, switch in the header).
+- [x] Dark theme with a toggle, no flash on load; icons from lucide-react, no emoji.
+- [x] Sticky header with blur, phone menu panel, trust strip on the homepage, product cards with badges,
+      redesigned product page, checkout, confirmation and order tracking.
+
 ## 7. Next
 
 - [ ] Lighthouse mobile on the production build for /, a category and a product page; fix what misses

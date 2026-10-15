@@ -1,4 +1,5 @@
 import { getImageProps } from "next/image";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { HomeSection } from "@/lib/api/catalog";
 
@@ -10,7 +11,7 @@ type Slide = NonNullable<HomeSection["slides"]>[number];
  */
 export function Carousel({ slides }: { slides: Slide[] }) {
     return (
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
             {slides.map((slide, index) => (
                 <SlideView key={slide.id} slide={slide} priority={index === 0} />
             ))}
@@ -31,11 +32,14 @@ function SlideView({ slide, priority }: { slide: Slide; priority: boolean }) {
                 <img {...phone} alt={alt} className="h-full w-full object-cover" style={{ width: "100%", height: "100%" }} />
             </picture>
             {hasText && (
-                <div className="absolute inset-0 flex flex-col items-start justify-end gap-2 bg-gradient-to-t from-black/55 to-transparent p-5 text-white sm:justify-center sm:bg-gradient-to-r sm:p-12">
-                    {slide.title && <p className="max-w-xl text-2xl font-bold leading-tight sm:text-4xl">{slide.title}</p>}
+                <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 bg-gradient-to-t from-black/60 via-black/10 to-transparent p-6 text-white sm:justify-center sm:bg-gradient-to-r sm:from-black/55 sm:via-black/15 sm:p-14">
+                    {slide.title && <p className="max-w-xl text-3xl font-bold leading-[1.1] tracking-tight [text-wrap:balance] sm:text-5xl">{slide.title}</p>}
                     {slide.description && <p className="max-w-md text-sm sm:text-base">{slide.description}</p>}
                     {slide.buttonLabel && slide.linkUrl && (
-                        <span className="mt-1 rounded-control bg-page px-5 py-2.5 text-sm font-semibold text-ink">{slide.buttonLabel}</span>
+                        <span className="mt-1 inline-flex items-center gap-2 rounded-control bg-white px-5 py-3 text-sm font-semibold text-black">
+                            {slide.buttonLabel}
+                            <ArrowRight size={16} aria-hidden />
+                        </span>
                     )}
                 </div>
             )}

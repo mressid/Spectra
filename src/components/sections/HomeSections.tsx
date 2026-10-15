@@ -1,20 +1,27 @@
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { HomeSection } from "@/lib/api/catalog";
+import type { Language } from "@/lib/api/client";
 import { richTextToHtml } from "@/lib/html";
 import { formatMoney } from "@/lib/format";
-import { words } from "@/lib/words";
+import { localPath } from "@/lib/i18n";
+import { getWords } from "@/lib/words";
 import { ProductCard } from "../ProductCard";
 import { ProductGrid } from "../ProductGrid";
 import { Carousel } from "./Carousel";
 
 /** Every homepage section, in the order the owner arranged them in the admin. */
-export function HomeSections({ sections }: { sections: HomeSection[] }) {
+export function HomeSections({ lang, sections, afterFirst }: { lang: Language; sections: HomeSection[]; afterFirst?: React.ReactNode }) {
     return (
-        <div className="space-y-14">
+        <div className="space-y-16">
             {sections.map((section, index) => (
-                <Section key={section.id} section={section} first={index === 0} />
+                <div key={section.id} className="space-y-16">
+                    <Section lang={lang} section={section} first={index === 0} />
+                    {index === 0 && afterFirst}
+                </div>
             ))}
+            {sections.length === 0 && afterFirst}
         </div>
     );
 }
@@ -22,14 +29,15 @@ export function HomeSections({ sections }: { sections: HomeSection[] }) {
 function Heading({ section }: { section: HomeSection }) {
     if (!section.title) return null;
     return (
-        <div className="mb-5">
-            <h2 className="text-xl font-semibold">{section.title}</h2>
-            {section.subtitle && <p className="mt-1 text-sm text-muted">{section.subtitle}</p>}
+        <div className="mb-6">
+            <h2 className="text-2xl font-bold tracking-tight [text-wrap:balance]">{section.title}</h2>
+            {section.subtitle && <p className="mt-1.5 text-muted">{section.subtitle}</p>}
         </div>
     );
 }
 
-function Section({ section, first }: { section: HomeSection; first: boolean }) {
+function Section({ lang, section, first }: { lang: Language; section: HomeSection; first: boolean }) {
+    const words = getWords(lang);
     switch (section.type) {
         case "CAROUSEL":
             return section.slides?.length ? <Carousel slides={section.slides} /> : null;
@@ -40,15 +48,15 @@ function Section({ section, first }: { section: HomeSection; first: boolean }) {
                 <section>
                     <Heading section={section} />
                     {section.layout === "ROW" ? (
-                        <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
+                        <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0">
                             {products.map((product, index) => (
-                                <div key={product.id} className="w-40 shrink-0 snap-start sm:w-56">
-                                    <ProductCard product={product} priority={first && index < 2} />
+                                <div key={product.id} className="w-[42vw] max-w-56 shrink-0 snap-start">
+                                    <ProductCard lang={lang} product={product} priority={first && index < 2} />
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <ProductGrid products={products} priorityCount={first ? 2 : 0} />
+                        <ProductGrid lang={lang} products={products} priorityCount={first ? 2 : 0} />
                     )}
                 </section>
             );
@@ -59,13 +67,16 @@ function Section({ section, first }: { section: HomeSection; first: boolean }) {
                     <Heading section={section} />
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                         {section.categories.map((category) => (
-                            <Link key={category.id} href={`/categories/${category.slug}`} className="group block">
-                                <div className="relative aspect-[4/3] overflow-hidden rounded-photo bg-surface">
+                            <Link key={category.id} href={localPath(lang, `/categories/${category.slug}`)} className="group relative block overflow-hidden rounded-photo bg-surface">
+                                <div className="relative aspect-[4/3]">
                                     {category.imageUrl && (
-                                        <Image src={category.imageUrl} alt={category.name} fill sizes="(min-width:1024px) 25vw, 50vw" className="object-cover group-hover:opacity-90" />
+                                        <Image src={category.imageUrl} alt="" fill sizes="(min-width:1024px) 25vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                                     )}
                                 </div>
-                                <p className="mt-2 text-sm font-medium">{category.name}</p>
+                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/60 to-transparent p-3 pt-8 text-white">
+                                    <span className="text-sm font-semibold">{category.name}</span>
+                                    <ArrowRight size={16} aria-hidden />
+                                </div>
                             </Link>
                         ))}
                     </div>
@@ -75,14 +86,16 @@ function Section({ section, first }: { section: HomeSection; first: boolean }) {
             return section.brands?.length ? (
                 <section>
                     <Heading section={section} />
-                    <div className="flex flex-wrap items-center gap-6">
-                        {section.brands.map((brand) =>
-                            brand.logoUrl ? (
-                                <Image key={brand.id} src={brand.logoUrl} alt={brand.name} width={96} height={96} className="h-16 w-16 object-contain" />
-                            ) : (
-                                <span key={brand.id} className="text-sm font-semibold">{brand.name}</span>
-                            ),
-                        )}
+                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                        {section.brands.map((brand) => (
+                            <div key={brand.id} className="flex aspect-[3/2] items-center justify-center rounded-photo border border-line bg-white p-4">
+                                {brand.logoUrl ? (
+                                    <Image src={brand.logoUrl} alt={brand.name} width={120} height={80} className="max-h-full w-auto object-contain" />
+                                ) : (
+                                    <span className="text-sm font-semibold text-black">{brand.name}</span>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </section>
             ) : null;
@@ -92,18 +105,18 @@ function Section({ section, first }: { section: HomeSection; first: boolean }) {
                     <Heading section={section} />
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {section.bundles.map((bundle) => (
-                            <Link key={bundle.id} href={`/bundles/${bundle.slug}`} className="group flex gap-4 rounded-photo border border-line p-3">
+                            <Link key={bundle.id} href={localPath(lang, `/bundles/${bundle.slug}`)} className="group flex gap-4 rounded-photo border border-line bg-raised p-3 transition-colors hover:border-field">
                                 <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-control bg-surface">
-                                    {bundle.thumbnailUrl && <Image src={bundle.thumbnailUrl} alt={bundle.name} fill sizes="96px" className="object-cover" />}
+                                    {bundle.thumbnailUrl && <Image src={bundle.thumbnailUrl} alt="" fill sizes="96px" className="object-cover" />}
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="font-medium">{bundle.name}</p>
-                                    <p className="mt-1 text-sm">
+                                <div className="min-w-0 py-1">
+                                    <p className="font-semibold leading-snug">{bundle.name}</p>
+                                    <p className="mt-1.5 text-sm tabular-nums">
                                         {bundle.priceVaries && <span className="text-muted">{words.from} </span>}
-                                        <span className="font-semibold">{formatMoney(bundle.bundlePrice)}</span>{" "}
-                                        <span className="text-faint line-through">{formatMoney(bundle.regularPrice)}</span>
+                                        <span className="font-semibold">{formatMoney(bundle.bundlePrice, lang)}</span>{" "}
+                                        <span className="text-faint line-through">{formatMoney(bundle.regularPrice, lang)}</span>
                                     </p>
-                                    <p className="mt-1 text-xs text-stock">{words.bundleSaving(formatMoney(bundle.regularPrice - bundle.bundlePrice))}</p>
+                                    <p className="mt-1 text-xs font-medium text-stock">{words.bundleSaving(formatMoney(bundle.regularPrice - bundle.bundlePrice, lang))}</p>
                                 </div>
                             </Link>
                         ))}

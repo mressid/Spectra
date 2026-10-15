@@ -63,6 +63,13 @@ Tailwind only. Images through `next/image` (AVIF/WebP, sized); a 2.3 MB upload b
 
 ## Languages
 
-French only for now (`src/lib/i18n.ts`). If the shop turns on English with translated product texts, move
-pages under `app/[lang]/…` with `generateStaticParams` returning `fr`/`en`, add `alternates.languages`
-(hreflang) and pass `lang` to every catalogue read (it is already a cache-key argument of `getHome`).
+Every page lives under `app/[lang]/…` (`/fr/…`, `/en/…`); the layout's `generateStaticParams` builds both,
+so each language is its own cached, static page.
+
+- `src/proxy.ts` sends a path without a language (`/`, an old link) to the visitor's language: the one
+  they picked before (cookie `lang`, set by the switch), else their browser's, else French.
+- The layout redirects a language the shop does not offer (store settings `languages`) to its default.
+- `generateMetadata` uses `alternates(lang, path)` from `src/lib/i18n.ts`: canonical URL plus hreflang
+  links; `sitemap.xml` lists every page in each offered language.
+- The language is sent to the API as `Accept-Language`, so its messages (checkout errors, promo codes)
+  match the page. Product texts are not translated.

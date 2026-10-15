@@ -1,16 +1,21 @@
 "use client";
 
+import { Check, HandCoins, Minus, Plus, ShoppingBag, Truck } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Media, Product, VariantWithOptions } from "@/lib/api/catalog";
+import type { Language } from "@/lib/api/client";
 import { cart } from "@/lib/cart";
 import { formatMoney } from "@/lib/format";
-import { words } from "@/lib/words";
+import { localPath } from "@/lib/i18n";
+import { getWords } from "@/lib/words";
 import { Availability } from "../Availability";
 import { Price } from "../Price";
+import { ui } from "../ui";
 
 interface Props {
+    lang: Language;
     product: Product;
     variants: VariantWithOptions[];
     optionGroups: { name: string; values: string[] }[];
@@ -20,9 +25,10 @@ interface Props {
 
 /**
  * The interactive part of the product page: gallery, option picker, quantity, personalisation and the
- * order button. Everything it shows comes from the server render; choosing an option fetches nothing.
+ * order buttons. Everything it shows comes from the server render; choosing an option fetches nothing.
  */
-export function ProductView({ product, variants, optionGroups, photos, delivery }: Props) {
+export function ProductView({ lang, product, variants, optionGroups, photos, delivery }: Props) {
+    const words = getWords(lang);
     const router = useRouter();
     // an option with a single value is chosen for the customer
     const [chosen, setChosen] = useState<Record<string, string>>(() =>
@@ -73,26 +79,26 @@ export function ProductView({ product, variants, optionGroups, photos, delivery 
     };
 
     return (
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
             {/* gallery */}
-            <div>
+            <div className="lg:sticky lg:top-24 lg:self-start">
                 <div className="relative aspect-square overflow-hidden rounded-photo bg-surface">
                     {gallery[photoIndex] && (
                         <Image src={gallery[photoIndex].url} alt={gallery[photoIndex].alt} fill priority sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />
                     )}
                 </div>
                 {gallery.length > 1 && (
-                    <div className="mt-3 flex gap-2 overflow-x-auto">
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                         {gallery.map((photo, index) => (
                             <button
                                 key={photo.url + index}
                                 type="button"
                                 onClick={() => setPhotoIndex(index)}
-                                aria-label={`Photo ${index + 1}`}
+                                aria-label={words.photo(index + 1)}
                                 aria-current={index === photoIndex}
-                                className={`relative aspect-square w-16 shrink-0 overflow-hidden rounded-control border-2 ${index === photoIndex ? "border-ink" : "border-transparent"}`}
+                                className={`relative aspect-square w-[72px] shrink-0 overflow-hidden rounded-control ring-2 ring-offset-2 ring-offset-page transition ${index === photoIndex ? "ring-ink" : "ring-transparent hover:ring-field"}`}
                             >
-                                <Image src={photo.url} alt="" fill sizes="64px" className="object-cover" />
+                                <Image src={photo.url} alt="" fill sizes="72px" className="object-cover" />
                             </button>
                         ))}
                     </div>
@@ -100,98 +106,111 @@ export function ProductView({ product, variants, optionGroups, photos, delivery 
             </div>
 
             {/* details */}
-            <div>
-                <h1 className="text-2xl font-semibold leading-tight lg:text-3xl">{product.name}</h1>
-                <div className="mt-3">
+            <div className="min-w-0">
+                <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight [text-wrap:balance] lg:text-[2.1rem]">{product.name}</h1>
+                <div className="mt-4">
                     {variant ? (
-                        <Price price={variant.price} oldPrice={variant.compareAtPrice} large />
+                        <Price lang={lang} price={variant.price} oldPrice={variant.compareAtPrice} large />
                     ) : (
-                        <Price price={product.priceFrom} oldPrice={product.compareAtPriceFrom} from={product.priceVaries} large />
+                        <Price lang={lang} price={product.priceFrom} oldPrice={product.compareAtPriceFrom} from={product.priceVaries} large />
                     )}
                 </div>
-                <div className="mt-2">
-                    <Availability status={status} leadTimeDays={variant?.leadTimeDays ?? product.leadTimeDays} />
+                <div className="mt-3">
+                    <Availability lang={lang} status={status} leadTimeDays={variant?.leadTimeDays ?? product.leadTimeDays} />
                 </div>
-                {product.shortDescription && <p className="mt-4 text-muted">{product.shortDescription}</p>}
+                {product.shortDescription && <p className="mt-5 leading-relaxed text-muted">{product.shortDescription}</p>}
 
-                {optionGroups.map((group) => (
-                    <fieldset key={group.name} className="mt-5">
-                        <legend className="mb-2 text-sm font-semibold">{group.name}</legend>
-                        <div className="flex flex-wrap gap-2">
-                            {group.values.map((value) => {
-                                const active = chosen[group.name] === value;
-                                const possible = isPossible(group.name, value);
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        aria-pressed={active}
-                                        onClick={() => {
-                                            setChosen((current) => ({ ...current, [group.name]: value }));
-                                            setAdded(false);
-                                        }}
-                                        className={`min-h-11 rounded-control border px-4 text-sm ${
-                                            active ? "border-ink bg-ink text-white" : possible ? "border-field hover:border-ink" : "border-field text-faint line-through"
-                                        }`}
-                                    >
-                                        {value}
-                                    </button>
-                                );
-                            })}
+                <div className="mt-6 space-y-5 border-t border-line pt-6">
+                    {optionGroups.map((group) => (
+                        <fieldset key={group.name}>
+                            <legend className="mb-2.5 text-sm">
+                                <span className="font-semibold">{group.name}</span>
+                                {chosen[group.name] && <span className="text-muted"> · {chosen[group.name]}</span>}
+                            </legend>
+                            <div className="flex flex-wrap gap-2">
+                                {group.values.map((value) => {
+                                    const active = chosen[group.name] === value;
+                                    const possible = isPossible(group.name, value);
+                                    return (
+                                        <button
+                                            key={value}
+                                            type="button"
+                                            aria-pressed={active}
+                                            onClick={() => {
+                                                setChosen((current) => ({ ...current, [group.name]: value }));
+                                                setAdded(false);
+                                            }}
+                                            className={`min-h-11 min-w-11 rounded-control border px-4 text-sm font-medium transition-colors ${
+                                                active
+                                                    ? "border-ink bg-ink text-on-ink"
+                                                    : possible
+                                                      ? "border-field hover:border-ink"
+                                                      : "border-line text-faint line-through"
+                                            }`}
+                                        >
+                                            {value}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </fieldset>
+                    ))}
+
+                    {product.allowPersonalization && (
+                        <label className="block">
+                            <span className={ui.label}>{words.personalisation}</span>
+                            {product.personalizationInstructions && <span className="mb-2 block text-sm text-muted">{product.personalizationInstructions}</span>}
+                            <input value={personalization} onChange={(event) => setPersonalization(event.target.value)} maxLength={100} className={ui.input} />
+                        </label>
+                    )}
+
+                    <div className="flex items-stretch gap-3">
+                        <div className="flex items-center rounded-control border border-field" role="group" aria-label={words.quantity}>
+                            <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.decrease} onClick={() => setQuantity((value) => Math.max(1, value - 1))}>
+                                <Minus size={16} aria-hidden />
+                            </button>
+                            <input
+                                aria-label={words.quantity}
+                                inputMode="numeric"
+                                value={quantity}
+                                onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value.replace(/\D/g, "")) || 1)))}
+                                className="h-12 w-9 bg-transparent text-center text-base tabular-nums focus:outline-none"
+                            />
+                            <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.increase} onClick={() => setQuantity((value) => Math.min(99, value + 1))}>
+                                <Plus size={16} aria-hidden />
+                            </button>
                         </div>
-                    </fieldset>
-                ))}
-
-                {product.allowPersonalization && (
-                    <label className="mt-5 block">
-                        <span className="mb-1 block text-sm font-semibold">{words.personalisation}</span>
-                        {product.personalizationInstructions && <span className="mb-2 block text-sm text-muted">{product.personalizationInstructions}</span>}
-                        <input
-                            value={personalization}
-                            onChange={(event) => setPersonalization(event.target.value)}
-                            maxLength={100}
-                            className="w-full rounded-control border border-field px-3 py-3 text-base"
-                        />
-                    </label>
-                )}
-
-                <div className="mt-6 flex items-center gap-3">
-                    <label className="sr-only" htmlFor="quantity">{words.quantity}</label>
-                    <div className="flex items-center rounded-control border border-field">
-                        <button type="button" className="h-12 w-11 text-lg" aria-label="-1" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>−</button>
-                        <input
-                            id="quantity"
-                            inputMode="numeric"
-                            value={quantity}
-                            onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value.replace(/\D/g, "")) || 1)))}
-                            className="h-12 w-10 text-center text-base"
-                        />
-                        <button type="button" className="h-12 w-11 text-lg" aria-label="+1" onClick={() => setQuantity((value) => Math.min(99, value + 1))}>+</button>
+                        <button type="button" disabled={!canOrder} onClick={addToCart} className={`${ui.secondary} flex-1`}>
+                            {added ? <Check size={18} aria-hidden /> : <ShoppingBag size={18} aria-hidden />}
+                            {added ? words.added : words.addToCart}
+                        </button>
                     </div>
                     <button
                         type="button"
                         disabled={!canOrder}
-                        onClick={addToCart}
-                        className="h-12 flex-1 rounded-control border border-ink font-semibold disabled:border-field disabled:text-muted"
+                        onClick={() => {
+                            addToCart();
+                            router.push(localPath(lang, "/checkout"));
+                        }}
+                        className={`${ui.primary} w-full`}
                     >
-                        {added ? `✓ ${words.added}` : words.addToCart}
+                        {status === "OUT_OF_STOCK" && variant ? words.soldOut : missing.length ? words.choose(missing) : words.order}
                     </button>
                 </div>
-                <button
-                    type="button"
-                    disabled={!canOrder}
-                    onClick={() => {
-                        addToCart();
-                        router.push("/checkout");
-                    }}
-                    className="mt-3 h-12 w-full rounded-control bg-ink font-semibold text-white disabled:bg-surface disabled:text-muted"
-                >
-                    {status === "OUT_OF_STOCK" && variant ? words.soldOut : missing.length ? words.choose(missing) : words.order}
-                </button>
-                <p className="mt-3 text-sm text-muted">
-                    🚚 {words.delivery} {delivery.fee > 0 ? formatMoney(delivery.fee) : words.free}
-                    {delivery.freeFrom != null && delivery.fee > 0 && ` · ${words.freeFrom(formatMoney(delivery.freeFrom))}`} · {words.payOnDelivery}
-                </p>
+
+                <ul className="mt-6 divide-y divide-line rounded-photo border border-line text-sm">
+                    <li className="flex items-center gap-3 px-4 py-3">
+                        <Truck size={18} strokeWidth={1.8} className="shrink-0 text-muted" aria-hidden />
+                        <span>
+                            {words.delivery} {delivery.fee > 0 ? formatMoney(delivery.fee, lang) : words.free}
+                            {delivery.freeFrom != null && delivery.fee > 0 && <span className="text-muted"> · {words.freeFrom(formatMoney(delivery.freeFrom, lang))}</span>}
+                        </span>
+                    </li>
+                    <li className="flex items-center gap-3 px-4 py-3">
+                        <HandCoins size={18} strokeWidth={1.8} className="shrink-0 text-muted" aria-hidden />
+                        <span>{words.payOnDelivery}<span className="text-muted"> · {words.payOnDeliveryText}</span></span>
+                    </li>
+                </ul>
             </div>
         </div>
     );
