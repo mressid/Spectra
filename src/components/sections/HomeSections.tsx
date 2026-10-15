@@ -41,7 +41,9 @@ function Section({ lang, section, first }: { lang: Language; section: HomeSectio
     const words = getWords(lang);
     switch (section.type) {
         case "CAROUSEL":
-            return section.slides?.length ? <Carousel slides={section.slides} /> : null;
+            return section.slides?.length ? (
+                <Carousel slides={section.slides} labels={{ previous: words.previous, next: words.next, slide: words.slide }} />
+            ) : null;
         case "PRODUCTS": {
             const products = section.products ?? [];
             if (products.length === 0) return null;
