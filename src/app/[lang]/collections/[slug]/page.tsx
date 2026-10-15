@@ -27,7 +27,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
     return (
         <>
             <Breadcrumb lang={lang} crumbs={[{ name: collection.name, path: `/collections/${collection.slug}` }]} />
-            <h1 className="mb-2 text-3xl font-bold tracking-tight [text-wrap:balance]">{collection.name}</h1>
+            <h1 className="mb-2 font-display text-[2rem] font-semibold leading-tight tracking-tight [text-wrap:balance]">{collection.name}</h1>
             {collection.description && <p className="mb-6 max-w-2xl text-muted">{collection.description}</p>}
             <Suspense fallback={<GridSkeleton />}>
                 <ProductListing lang={lang} basePath={localPath(lang, `/collections/${collection.slug}`)} filter={{ collectionId: collection.id }} searchParams={searchParams} />

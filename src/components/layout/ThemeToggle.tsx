@@ -24,7 +24,7 @@ const subscribe = (listener: () => void) => {
 };
 
 /** Light / dark switch; the choice is remembered (the layout applies it before paint). */
-export function ThemeToggle({ lang, withLabel = false }: { lang: Language; withLabel?: boolean }) {
+export function ThemeToggle({ lang, withLabel = false, compact = false }: { lang: Language; withLabel?: boolean; compact?: boolean }) {
     const words = getWords(lang);
     const theme = useSyncExternalStore<Theme | null>(subscribe, current, () => null);
     const next: Theme = theme === "dark" ? "light" : "dark";
@@ -43,10 +43,16 @@ export function ThemeToggle({ lang, withLabel = false }: { lang: Language; withL
             type="button"
             onClick={toggle}
             aria-label={`${words.theme} : ${label}`}
-            className={withLabel ? "flex w-full items-center gap-3 py-3 text-base" : "inline-flex h-11 w-11 items-center justify-center rounded-control hover:bg-surface"}
+            className={
+                withLabel
+                    ? "flex w-full items-center gap-3 py-3 text-base"
+                    : compact
+                      ? "inline-flex h-7 w-7 items-center justify-center rounded-control hover:text-ink"
+                      : "inline-flex h-11 w-11 items-center justify-center rounded-control hover:bg-surface"
+            }
         >
             {/* the icon shows the theme a tap switches to */}
-            {theme === "dark" ? <Sun size={20} strokeWidth={1.8} aria-hidden /> : <Moon size={20} strokeWidth={1.8} aria-hidden />}
+            {theme === "dark" ? <Sun size={compact ? 15 : 20} strokeWidth={1.8} aria-hidden /> : <Moon size={compact ? 15 : 20} strokeWidth={1.8} aria-hidden />}
             {withLabel && <span>{words.theme} · {theme === "dark" ? words.themeDark : words.themeLight}</span>}
         </button>
     );

@@ -57,7 +57,10 @@ Colour carries meaning: green = available, amber = made to order, red = discount
 
 ## 3. Typography
 
-Inter (`next/font`, self-hosted, `display: swap`), Tailwind sizes:
+Two faces from `next/font` (self-hosted, `display: swap`): **Fira Sans Condensed** for titles, prices
+and buttons (`font-display`), **Fira Sans** for everything else (`font-sans`). The shop name is set in
+the condensed face, uppercase, widely tracked. The look is a printed catalogue: square corners, grey
+photo tiles, centred names and prices under each photo, black buttons. Sizes:
 
 | Use | Class |
 |---|---|

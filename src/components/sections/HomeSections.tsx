@@ -10,13 +10,14 @@ import { getWords } from "@/lib/words";
 import { ProductCard } from "../ProductCard";
 import { ProductGrid } from "../ProductGrid";
 import { Carousel } from "./Carousel";
+import { ScrollRow } from "./ScrollRow";
 
 /** Every homepage section, in the order the owner arranged them in the admin. */
 export function HomeSections({ lang, sections, afterFirst }: { lang: Language; sections: HomeSection[]; afterFirst?: React.ReactNode }) {
     return (
-        <div className="space-y-16">
+        <div className="space-y-20">
             {sections.map((section, index) => (
-                <div key={section.id} className="space-y-16">
+                <div key={section.id} className="space-y-20">
                     <Section lang={lang} section={section} first={index === 0} />
                     {index === 0 && afterFirst}
                 </div>
@@ -29,9 +30,9 @@ export function HomeSections({ lang, sections, afterFirst }: { lang: Language; s
 function Heading({ section }: { section: HomeSection }) {
     if (!section.title) return null;
     return (
-        <div className="mb-6">
-            <h2 className="text-2xl font-bold tracking-tight [text-wrap:balance]">{section.title}</h2>
-            {section.subtitle && <p className="mt-1.5 text-muted">{section.subtitle}</p>}
+        <div className="mb-7">
+            <h2 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight [text-wrap:balance]">{section.title}</h2>
+            {section.subtitle && <p className="mt-1 text-muted">{section.subtitle}</p>}
         </div>
     );
 }
@@ -48,13 +49,13 @@ function Section({ lang, section, first }: { lang: Language; section: HomeSectio
                 <section>
                     <Heading section={section} />
                     {section.layout === "ROW" ? (
-                        <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0">
+                        <ScrollRow labels={{ previous: words.previous, next: words.next }}>
                             {products.map((product, index) => (
-                                <div key={product.id} className="w-[42vw] max-w-56 shrink-0 snap-start">
+                                <div key={product.id} className="w-[44vw] shrink-0 snap-start sm:w-[calc((100%-2*1rem)/3)] lg:w-[calc((100%-3*1.5rem)/4)]">
                                     <ProductCard lang={lang} product={product} priority={first && index < 2} />
                                 </div>
                             ))}
-                        </div>
+                        </ScrollRow>
                     ) : (
                         <ProductGrid lang={lang} products={products} priorityCount={first ? 2 : 0} />
                     )}

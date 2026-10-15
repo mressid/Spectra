@@ -25,7 +25,7 @@ export function ListingControls({ lang, basePath, sort, inStock, total, keep = {
         const query = params.toString();
         return query ? `${basePath}?${query}` : basePath;
     };
-    const chip = "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm";
+    const chip = "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-control border px-3.5 text-sm";
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <span className="text-sm text-muted tabular-nums">{words.products(total)}</span>

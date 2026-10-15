@@ -33,10 +33,10 @@ function SlideView({ slide, priority }: { slide: Slide; priority: boolean }) {
             </picture>
             {hasText && (
                 <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 bg-gradient-to-t from-black/60 via-black/10 to-transparent p-6 text-white sm:justify-center sm:bg-gradient-to-r sm:from-black/55 sm:via-black/15 sm:p-14">
-                    {slide.title && <p className="max-w-xl text-3xl font-bold leading-[1.1] tracking-tight [text-wrap:balance] sm:text-5xl">{slide.title}</p>}
+                    {slide.title && <p className="max-w-xl font-display text-[2rem] font-semibold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">{slide.title}</p>}
                     {slide.description && <p className="max-w-md text-sm sm:text-base">{slide.description}</p>}
                     {slide.buttonLabel && slide.linkUrl && (
-                        <span className="mt-1 inline-flex items-center gap-2 rounded-control bg-white px-5 py-3 text-sm font-semibold text-black">
+                        <span className="mt-2 inline-flex h-11 items-center gap-2 rounded-control bg-white px-6 font-display text-[15px] font-semibold tracking-wide text-black">
                             {slide.buttonLabel}
                             <ArrowRight size={16} aria-hidden />
                         </span>

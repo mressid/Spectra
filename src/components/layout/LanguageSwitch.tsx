@@ -23,7 +23,7 @@ export function LanguageSwitch({ lang, languages, block = false }: { lang: Langu
                     onClick={() => {
                         document.cookie = `lang=${code}; path=/; max-age=31536000; samesite=lax`;
                     }}
-                    className={`rounded-chip px-2 py-1.5 text-xs font-semibold uppercase tracking-wider ${
+                    className={`rounded-chip px-1.5 py-1 text-xs font-semibold uppercase tracking-wider ${
                         code === lang ? "text-ink" : "text-faint hover:text-ink"
                     } ${block ? "border border-field px-3 py-2 text-sm" : ""}`}
                 >

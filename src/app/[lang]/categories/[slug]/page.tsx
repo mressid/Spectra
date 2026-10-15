@@ -40,11 +40,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
                 lang={lang}
                 crumbs={[...(parent ? [{ name: parent.name, path: `/categories/${parent.slug}` }] : []), { name: category.name, path: `/categories/${category.slug}` }]}
             />
-            <h1 className="mb-5 text-3xl font-bold tracking-tight [text-wrap:balance]">{category.name}</h1>
+            <h1 className="mb-5 font-display text-[2rem] font-semibold leading-tight tracking-tight [text-wrap:balance]">{category.name}</h1>
             {children.length > 0 && (
                 <nav className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
                     {children.map((child) => (
-                        <Link key={child.id} href={localPath(lang, `/categories/${child.slug}`)} className="inline-flex h-9 shrink-0 items-center rounded-full bg-surface px-4 text-sm hover:bg-line">
+                        <Link key={child.id} href={localPath(lang, `/categories/${child.slug}`)} className="inline-flex h-9 shrink-0 items-center rounded-control border border-line px-4 text-sm hover:border-ink">
                             {child.name}
                         </Link>
                     ))}

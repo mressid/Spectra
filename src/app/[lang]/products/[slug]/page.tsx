@@ -6,7 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ProductView } from "@/components/product/ProductView";
-import { getProductBySlug, getProductDetails, getRelatedProducts, getReviews, getSitemap, getStoreSettings } from "@/lib/api/catalog";
+import { getBrands, getProductBySlug, getProductDetails, getRelatedProducts, getReviews, getSitemap, getStoreSettings } from "@/lib/api/catalog";
 import type { Language } from "@/lib/api/client";
 import { richTextToHtml } from "@/lib/html";
 import { alternates } from "@/lib/i18n";
@@ -39,12 +39,14 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
     const words = getWords(lang);
     const product = await getProductBySlug(slug);
     if (!product) notFound();
-    const [details, related, reviews, settings] = await Promise.all([
+    const [details, related, reviews, settings, brands] = await Promise.all([
         getProductDetails(product.id),
         getRelatedProducts(product.id),
         getReviews(product.id),
         getStoreSettings(),
+        getBrands(),
     ]);
+    const brandName = brands.find((brand) => brand.id === product.brandId)?.name;
     const category = details.categories[0];
     const site = process.env.SITE_URL ?? "http://localhost:3000";
     const rating = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : null;
@@ -61,6 +63,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             />
             <ProductView
                 lang={lang}
+                brandName={brandName}
                 product={product}
                 variants={details.variants}
                 optionGroups={details.optionGroups}
@@ -68,30 +71,33 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 delivery={{ fee: settings.deliveryFee, freeFrom: settings.freeDeliveryThreshold ?? null }}
             />
 
-            {descriptionHtml && (
-                <section className="mt-16 border-t border-line pt-10">
-                    <h2 className="mb-4 text-xl font-bold tracking-tight">{words.description}</h2>
-                    <div className="prose-store max-w-3xl" dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
-                </section>
-            )}
-
-            {details.specifications.length > 0 && (
-                <section className="mt-12 border-t border-line pt-10">
-                    <h2 className="mb-4 text-xl font-bold tracking-tight">{words.specifications}</h2>
-                    <dl className="max-w-2xl divide-y divide-line rounded-photo border border-line text-sm">
-                        {details.specifications.map((row) => (
-                            <div key={row.name} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 px-4 py-3">
-                                <dt className="text-muted">{row.name}</dt>
-                                <dd className="font-medium">{row.value}</dd>
-                            </div>
-                        ))}
-                    </dl>
+            {(descriptionHtml || details.specifications.length > 0) && (
+                <section className="mt-16 grid gap-10 border-t border-line pt-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16">
+                    {descriptionHtml && (
+                        <div>
+                            <h2 className="mb-4 font-display text-xl font-semibold tracking-tight">{words.description}</h2>
+                            <div className="prose-store max-w-none" dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
+                        </div>
+                    )}
+                    {details.specifications.length > 0 && (
+                        <div>
+                            <h2 className="mb-4 font-display text-xl font-semibold tracking-tight">{words.specifications}</h2>
+                            <dl className="divide-y divide-line border-y border-line text-sm">
+                                {details.specifications.map((row) => (
+                                    <div key={row.name} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 py-2.5">
+                                        <dt className="text-muted">{row.name}</dt>
+                                        <dd className="font-medium">{row.value}</dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </div>
+                    )}
                 </section>
             )}
 
             {product.contentBlocks.length > 0 && (
                 <section className="mt-12 space-y-8 border-t border-line pt-10">
-                    <h2 className="text-xl font-bold tracking-tight">{words.more}</h2>
+                    <h2 className="font-display text-xl font-semibold tracking-tight">{words.more}</h2>
                     {product.contentBlocks.map((block, index) =>
                         block.type === "TEXT" ? (
                             <div key={index} className="prose-store max-w-3xl" dangerouslySetInnerHTML={{ __html: richTextToHtml(block.content, block.format ?? "MARKDOWN") }} />
@@ -112,7 +118,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             {reviews.length > 0 && rating != null && (
                 <section className="mt-12 border-t border-line pt-10">
                     <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1">
-                        <h2 className="text-xl font-bold tracking-tight">{words.reviews}</h2>
+                        <h2 className="font-display text-xl font-semibold tracking-tight">{words.reviews}</h2>
                         <Stars rating={rating} />
                         <span className="text-sm text-muted tabular-nums">{rating.toFixed(1)} · {words.reviewCount(reviews.length)}</span>
                     </div>
@@ -130,7 +136,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
             {related.length > 0 && (
                 <section className="mt-12 border-t border-line pt-10">
-                    <h2 className="mb-6 text-xl font-bold tracking-tight">{words.related}</h2>
+                    <h2 className="mb-7 font-display text-[1.75rem] font-semibold tracking-tight">{words.related}</h2>
                     <ProductGrid lang={lang} products={related.slice(0, 8)} priorityCount={0} />
                 </section>
             )}

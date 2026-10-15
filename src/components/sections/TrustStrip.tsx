@@ -4,7 +4,7 @@ import type { Language } from "@/lib/api/client";
 import { formatMoney } from "@/lib/format";
 import { getWords } from "@/lib/words";
 
-/** Three facts every shop of the template shares: delivery terms, cash on delivery, phone confirmation. */
+/** Three outlined tiles with the terms every shop of the template shares: delivery, cash, phone confirmation. */
 export function TrustStrip({ lang, settings }: { lang: Language; settings: StoreSettings }) {
     const words = getWords(lang);
     const fee = settings.deliveryFee > 0 ? formatMoney(settings.deliveryFee, lang) : words.free;
@@ -17,15 +17,13 @@ export function TrustStrip({ lang, settings }: { lang: Language; settings: Store
         { icon: PhoneCall, title: words.weConfirm, text: words.weConfirmText },
     ];
     return (
-        <ul className="grid gap-px overflow-hidden rounded-photo border border-line bg-line sm:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-3 sm:gap-5">
             {items.map(({ icon: Icon, title, text }) => (
-                <li key={title} className="flex items-start gap-3 bg-raised p-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stock-soft text-stock">
-                        <Icon size={19} strokeWidth={1.8} aria-hidden />
-                    </span>
+                <li key={title} className="flex items-center gap-4 rounded-photo border border-line px-5 py-4 sm:flex-col sm:py-6 sm:text-center">
+                    <Icon size={24} strokeWidth={1.5} className="shrink-0 text-ink" aria-hidden />
                     <span>
-                        <span className="block text-sm font-semibold">{title}</span>
-                        <span className="block text-sm text-muted">{text}</span>
+                        <span className="block font-display text-[15px] font-semibold">{title}</span>
+                        <span className="mt-0.5 block text-sm text-muted">{text}</span>
                     </span>
                 </li>
             ))}

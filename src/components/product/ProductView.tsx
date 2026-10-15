@@ -16,6 +16,7 @@ import { ui } from "../ui";
 
 interface Props {
     lang: Language;
+    brandName?: string;
     product: Product;
     variants: VariantWithOptions[];
     optionGroups: { name: string; values: string[] }[];
@@ -27,7 +28,7 @@ interface Props {
  * The interactive part of the product page: gallery, option picker, quantity, personalisation and the
  * order buttons. Everything it shows comes from the server render; choosing an option fetches nothing.
  */
-export function ProductView({ lang, product, variants, optionGroups, photos, delivery }: Props) {
+export function ProductView({ lang, brandName, product, variants, optionGroups, photos, delivery }: Props) {
     const words = getWords(lang);
     const router = useRouter();
     // an option with a single value is chosen for the customer
@@ -81,14 +82,14 @@ export function ProductView({ lang, product, variants, optionGroups, photos, del
     return (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
             {/* gallery */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
-                <div className="relative aspect-square overflow-hidden rounded-photo bg-surface">
+            <div className="flex flex-col gap-3 lg:sticky lg:top-32 lg:flex-row-reverse lg:self-start">
+                <div className="relative aspect-square flex-1 overflow-hidden rounded-photo bg-surface">
                     {gallery[photoIndex] && (
-                        <Image src={gallery[photoIndex].url} alt={gallery[photoIndex].alt} fill priority sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />
+                        <Image src={gallery[photoIndex].url} alt={gallery[photoIndex].alt} fill priority sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" />
                     )}
                 </div>
                 {gallery.length > 1 && (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                    <div className="flex gap-2 overflow-x-auto pb-1 lg:max-h-[560px] lg:w-[72px] lg:flex-col lg:overflow-y-auto lg:overflow-x-visible lg:pb-0">
                         {gallery.map((photo, index) => (
                             <button
                                 key={photo.url + index}
@@ -107,7 +108,8 @@ export function ProductView({ lang, product, variants, optionGroups, photos, del
 
             {/* details */}
             <div className="min-w-0">
-                <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight [text-wrap:balance] lg:text-[2.1rem]">{product.name}</h1>
+                {brandName && <p className="mb-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted">{brandName}</p>}
+                <h1 className="font-display text-[2rem] font-semibold leading-[1.1] tracking-tight [text-wrap:balance] lg:text-[2.6rem]">{product.name}</h1>
                 <div className="mt-4">
                     {variant ? (
                         <Price lang={lang} price={variant.price} oldPrice={variant.compareAtPrice} large />

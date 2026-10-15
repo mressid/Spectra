@@ -16,10 +16,10 @@ export async function Footer({ lang }: { lang: Language }) {
     const whatsapp = footer.whatsapp?.replace(/[^\d]/g, "");
     const contact = "flex items-center gap-2.5 text-muted hover:text-ink";
     return (
-        <footer className="border-t border-line bg-surface text-sm">
-            <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+        <footer className="mt-8 border-t border-line bg-raised text-sm">
+            <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
                 <div className="space-y-3">
-                    <p className="text-base font-bold">{settings.shopName || words.shop}</p>
+                    <p className="font-display text-xl font-bold uppercase tracking-[0.18em]">{settings.shopName || words.shop}</p>
                     {footer.aboutText && <p className="whitespace-pre-line leading-relaxed text-muted">{footer.aboutText}</p>}
                     {footer.socialLinks.length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-1">
@@ -32,7 +32,7 @@ export async function Footer({ lang }: { lang: Language }) {
                     )}
                 </div>
                 <div className="space-y-2.5">
-                    <p className="mb-1 font-semibold">{words.contact}</p>
+                    <p className="mb-2 font-display text-[15px] font-semibold">{words.contact}</p>
                     {footer.phone && <a href={`tel:${footer.phone}`} className={contact}><Phone size={16} aria-hidden />{footer.phone}</a>}
                     {whatsapp && <a href={`https://wa.me/${whatsapp}`} className={contact}><MessageCircle size={16} aria-hidden />WhatsApp</a>}
                     {footer.email && <a href={`mailto:${footer.email}`} className={contact}><Mail size={16} aria-hidden />{footer.email}</a>}
@@ -40,7 +40,7 @@ export async function Footer({ lang }: { lang: Language }) {
                 </div>
                 {footer.columns.map((column) => (
                     <div key={column.title}>
-                        <p className="mb-3 font-semibold">{column.title}</p>
+                        <p className="mb-3 font-display text-[15px] font-semibold">{column.title}</p>
                         <ul className="space-y-2">
                             {column.links.map((link) => (
                                 <li key={link.url + link.label}>
@@ -51,7 +51,7 @@ export async function Footer({ lang }: { lang: Language }) {
                     </div>
                 ))}
                 <div>
-                    <p className="mb-3 font-semibold">{words.help}</p>
+                    <p className="mb-3 font-display text-[15px] font-semibold">{words.help}</p>
                     <Link href={localPath(lang, "/track")} className="text-muted hover:text-ink">{words.track}</Link>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Fira_Sans, Fira_Sans_Condensed } from "next/font/google";
 import { notFound, redirect } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -9,7 +9,8 @@ import { isLanguage, LANGUAGES } from "@/lib/i18n";
 import { getWords } from "@/lib/words";
 import "../globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
+const body = Fira_Sans({ variable: "--font-body", weight: ["400", "500", "600"], subsets: ["latin", "latin-ext"], display: "swap" });
+const title = Fira_Sans_Condensed({ variable: "--font-title", weight: ["500", "600", "700"], subsets: ["latin", "latin-ext"], display: "swap" });
 
 // both languages are built ahead; one the shop does not offer redirects to its default language
 export async function generateStaticParams() {
@@ -48,7 +49,7 @@ export default async function LanguageLayout({ children, params }: LayoutProps<"
         redirect(`/${settings.defaultLanguage}`);
     }
     return (
-        <html lang={lang} className={`${inter.variable} antialiased`} suppressHydrationWarning>
+        <html lang={lang} className={`${body.variable} ${title.variable} antialiased`} suppressHydrationWarning>
             <head>
                 <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
             </head>
