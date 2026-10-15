@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/*
+ * Storefront design tokens (docs/DESIGN.md). Use the Tailwind names (bg-ink, text-muted, rounded-photo…),
+ * never raw hex values in components. Light only: the shop looks the same for every customer.
+ */
+@theme {
+    --font-sans: var(--font-inter), system-ui, sans-serif;
+
+    --color-ink: #111827; /* text, primary button, chosen option */
+    --color-muted: #6b7280; /* secondary text */
+    --color-faint: #9ca3af; /* old price, unavailable option */
+    --color-line: #e5e7eb; /* borders, dividers */
+    --color-field: #d1d5db; /* input and option borders */
+    --color-surface: #f3f4f6; /* image placeholders, quiet blocks */
+    --color-page: #ffffff;
+    --color-stock: #15805a; /* "In stock", the store accent */
+    --color-order: #b45309; /* "Made to order · 48h" */
+    --color-sale: #b91c1c; /* discount badge text, errors */
+    --color-sale-soft: #fee2e2; /* discount badge background */
+
+    --radius-photo: 10px; /* product photos, cards */
+    --radius-control: 8px; /* buttons, inputs, option boxes */
+    --radius-chip: 4px;
+}
+
+body {
+    background: var(--color-page);
+    color: var(--color-ink);
+}
