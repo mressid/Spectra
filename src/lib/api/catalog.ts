@@ -95,6 +95,26 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return product;
 }
 
+/**
+ * A few products of a category for the Explore panel and page: its own newest ones, then those of its subcategories until
+ * [limit] is reached. Tagged like the category pages (through getProducts), so an admin change refreshes it.
+ */
+export async function getCategoryPreview(categoryId: string, limit = 4): Promise<Product[]> {
+    "use cache";
+    cacheLife("catalog");
+    cacheTag(tags.categories);
+    const categories = await getCategories();
+    const ids = [categoryId, ...categories.filter((category) => category.parentId === categoryId).map((category) => category.id)];
+    const products: Product[] = [];
+    for (const id of ids) {
+        if (products.length >= limit) break;
+        for (const product of (await getProducts({ categoryId: id, size: limit })).content) {
+            if (products.length < limit && !products.some((known) => known.id === product.id)) products.push(product);
+        }
+    }
+    return products;
+}
+
 export type ProductSort = "newest" | "price-asc" | "price-desc" | "name";
 
 export interface ProductQuery {

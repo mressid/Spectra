@@ -1858,6 +1858,7 @@ export interface components {
             navbarLayout?: "LOGO_CENTER" | "LOGO_LEFT" | "LOGO_LEFT_MENU_CENTER" | "LOGO_RIGHT";
             navShowSearch?: boolean;
             navShowMenu?: boolean;
+            navShowExplore?: boolean;
             navSticky?: boolean;
             primaryColor?: string;
             primaryColorDark?: string;
@@ -1882,6 +1883,7 @@ export interface components {
             navbarLayout?: "LOGO_CENTER" | "LOGO_LEFT" | "LOGO_LEFT_MENU_CENTER" | "LOGO_RIGHT";
             navShowSearch?: boolean;
             navShowMenu?: boolean;
+            navShowExplore?: boolean;
             navSticky?: boolean;
             primaryColor?: string;
             primaryColorDark?: string;

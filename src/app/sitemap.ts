@@ -16,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     return [
         ...entry(""),
+        // the Explore page exists unless the owner switched the link off
+        ...(settings.theme?.navShowExplore === false ? [] : entry("/explore")),
         ...categories.flatMap((item) => entry(`/categories/${item.slug}`, item.updatedAt)),
         ...collections.flatMap((item) => entry(`/collections/${item.slug}`, item.updatedAt)),
         ...products.flatMap((item) => entry(`/products/${item.slug}`, item.updatedAt)),

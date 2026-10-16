@@ -9,6 +9,7 @@ import { AnnouncementBar } from "./AnnouncementBar";
 import { Logo } from "../Logo";
 import { CartButton } from "./CartButton";
 import { LanguageSwitch } from "./LanguageSwitch";
+import { ExploreMenu, type ExploreCategory } from "./ExploreMenu";
 import { MobileMenu } from "./MobileMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -48,6 +49,11 @@ export async function Header({ lang }: { lang: Language }) {
     const align = layout === "LOGO_LEFT" ? ALIGN_2 : ALIGN_3;
     const showMenu = theme.navShowMenu !== false;
     const showSearch = theme.navShowSearch !== false;
+    const showExplore = theme.navShowExplore !== false;
+    const exploreCategories: ExploreCategory[] = topLevel.map((category) => ({
+        ...category,
+        children: categories.filter((child) => child.parentId === category.id).map(({ id, name, slug }) => ({ id, name, slug })),
+    }));
     // the logo block also sizes itself: a long name wraps less when it has room
     const logo = (
         <Link key="logo" href={localPath(lang, "/")} className="shrink-0 px-1 text-center font-display text-xl font-bold uppercase tracking-[0.18em] lg:text-2xl">
@@ -55,10 +61,11 @@ export async function Header({ lang }: { lang: Language }) {
         </Link>
     );
     const burger = <MobileMenu key="burger" lang={lang} languages={languages} categories={topLevel} />;
-    // the links only show on computers
-    const menu = showMenu ? (
+    // the links and the Explore panel only show on computers
+    const menu = showMenu || showExplore ? (
         <nav key="menu" className="hidden items-center gap-6 lg:flex" aria-label={words.categories}>
-            {topLevel.slice(0, 6).map((category) => (
+            {showExplore && <ExploreMenu lang={lang} categories={exploreCategories} />}
+            {showMenu && topLevel.slice(0, 6).map((category) => (
                 <Link key={category.id} href={localPath(lang, `/categories/${category.slug}`)} className="whitespace-nowrap font-display text-[15px] font-medium text-ink/80 hover:text-ink">
                     {category.name}
                 </Link>
@@ -89,7 +96,7 @@ export async function Header({ lang }: { lang: Language }) {
                     <ThemeToggle lang={lang} compact />
                 </div>
             </div>
-            <div className="border-b border-line bg-raised/90 backdrop-blur supports-[backdrop-filter]:bg-raised/80">
+            <div className="relative border-b border-line bg-raised/90 backdrop-blur supports-[backdrop-filter]:bg-raised/80">
                 <div className={`mx-auto grid h-16 max-w-[1400px] items-center px-2 sm:px-4 lg:h-[72px] lg:px-6 ${columns}`}>
                     {zones.map((parts, index) => (
                         <div key={index} className={`flex min-w-0 items-center gap-6 ${align[index]}`}>

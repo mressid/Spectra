@@ -90,7 +90,7 @@ variables that the layout puts in a `<style>` in the page head, after the defaul
 | `logoUrl` / `logoDarkUrl` | the header shows the logo (wide, 4:1, at least 400 × 100 px) instead of the shop name; the dark logo replaces it in the dark theme | the shop name |
 | `headerLogo` | what the header shows: `WIDE` (the logo), `SQUARE` (the icon) or `NAME` (the shop name in text); empty = the wide logo if there is one, else the name; a choice whose picture is missing shows the name | automatic |
 | `navbarLayout` | where the header puts its parts: `LOGO_CENTER` (links, logo, search and cart), `LOGO_LEFT` (logo and links, then search and cart), `LOGO_LEFT_MENU_CENTER` (logo, links centred, search and cart), `LOGO_RIGHT` (search and cart, links, logo). Phones always have the menu button first and the logo | `LOGO_CENTER` |
-| `navShowSearch`, `navShowMenu`, `navSticky` | the search button, the category links on computers, and whether the header stays at the top while scrolling | all on |
+| `navShowSearch`, `navShowMenu`, `navShowExplore`, `navSticky` | the search button, the category links on computers, the Explore panel (a header link opening the categories with a few products each), and whether the header stays at the top while scrolling | all on |
 | `iconUrl` | the browser-tab icon (favicon) and home-screen icon, always this one whatever the header shows (exactly square, 1:1, at least 512 × 512 px; the admin refuses an upload of another shape); `src/lib/icons.ts` has the image optimizer make the 32, 128 and 256 px versions, written into the cached page, so a new icon shows without a rebuild | `app/favicon.ico` |
 
 Colours are `#rrggbb`; anything else is ignored. The dark theme's brand colour has to be light, because

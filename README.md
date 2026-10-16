@@ -24,6 +24,8 @@ the backend tells the storefront which pages to refresh whenever the owner chang
 - **Cart and checkout** without an account: promo codes, delivery fee per governorate, cash on delivery,
   confirmation with the server's totals, order tracking and cancellation.
 - **Languages**: every page under `/fr/…` and `/en/…`; product texts stay as written in the admin.
+- **Explore**: a header link on computers opening a panel with the categories and, for the one pointed at, its
+  subcategories and a few products, loaded when it is first shown (`/api/explore`); the owner can turn it off in the admin.
 - **Live stock**: the product page is cached, but stock streams in on every view (partial prerendering), so a
   sold-out size shows at once.
 - **The shop's own look**: logo (wide or square icon, or just the name), brand and accent colours for each of

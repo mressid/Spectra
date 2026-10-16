@@ -53,6 +53,7 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
       `<Suspense>` hole (`getVariantStock`); the JSON-LD availability streams too.
 - [x] Navigation bar arrangement (logo centre / left / right, links beside the logo or centred, search, sticky) and the
       shop name set under Appearance; the name feeds the header, footer, page titles and invoices.
+- [x] Explore panel in the header (categories, subcategories and four products each, loaded on demand), switchable in the admin.
 - [x] Language switch is a page load (so the chosen theme survives); the layout's metadata no longer crashes on a
       path that is not a language (`/.well-known/…`).
 - [x] Backend: schema diagrams per domain in `diagrams/` (generated), and `docs/storefront-setup.md` there.

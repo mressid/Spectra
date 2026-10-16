@@ -70,6 +70,11 @@ offers' `availability` streams the same way. If the stock call fails the page le
 the API rechecks at checkout (409 "X est épuisé"). A sale therefore no longer needs to revalidate the product
 page; the `stock` tag still refreshes lists filtered on "in stock". Price stays cached and tagged.
 
+**The Explore panel loads on demand.** The header only carries the category names (tag `categories`); the products of a
+category come from `GET /api/explore?categoryId=` (`src/app/api/explore/route.ts`) when the visitor first points at it, through
+the same cached, tagged reads as the category pages (so an admin change shows there too). Ids that are not visible categories
+answer 404, so the cache cannot be filled with random ids. Never read products in the header itself: it would tie every page to them.
+
 **The shop's look is cached with the settings.** The layout reads `getStoreSettings()` (tag `settings`), turns its
 `theme` into CSS variables with `src/lib/theme.ts` and writes them in a `<style>` in the page head; the header
 shows the logo or icon from it arranged as the owner chose (`navbarLayout`), and the icon becomes the page icon. Saving Appearance in the admin refreshes the
