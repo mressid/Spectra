@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { getStoreSettings } from "@/lib/api/catalog";
 import { isLanguage, LANGUAGES } from "@/lib/i18n";
+import { themeCss } from "@/lib/theme";
 import { getWords } from "@/lib/words";
 import "../globals.css";
 
@@ -25,6 +26,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     const shopName = settings.shopName || getWords(lang).shop;
     return {
         metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+        // the shop's square icon (admin > Appearance) replaces the default favicon
+        ...(settings.theme?.iconUrl ? { icons: { icon: settings.theme.iconUrl, apple: settings.theme.iconUrl } } : {}),
         title: { default: shopName, template: `%s · ${shopName}` },
         description: settings.footer.aboutText ?? getWords(lang).deliveryEverywhere,
         openGraph: { siteName: shopName, locale: lang === "fr" ? "fr_TN" : "en_US", type: "website" },
@@ -50,10 +53,13 @@ export default async function LanguageLayout({ children, params }: LayoutProps<"
     if (!settings.languages.includes(lang)) {
         redirect(`/${settings.defaultLanguage}`);
     }
+    const css = themeCss(settings.theme);
     return (
         <html lang={lang} className={`${body.variable} ${title.variable} antialiased`} suppressHydrationWarning>
             <head>
                 <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+                {/* the shop's own colours, corners and title font (admin > Appearance) */}
+                {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
             </head>
             <body className="flex min-h-dvh flex-col bg-page font-sans text-ink">
                 <Header lang={lang} />

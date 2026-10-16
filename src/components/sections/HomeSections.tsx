@@ -32,7 +32,7 @@ function Heading({ section }: { section: HomeSection }) {
     return (
         <div className="mb-7">
             <h2 className="font-heading text-[1.75rem] font-medium leading-tight tracking-tight [text-wrap:balance]">{section.title}</h2>
-            {section.subtitle && <p className="mt-1 text-muted">{section.subtitle}</p>}
+            {section.subtitle && <p className="mt-2 max-w-2xl whitespace-pre-line leading-relaxed text-muted">{section.subtitle}</p>}
         </div>
     );
 }

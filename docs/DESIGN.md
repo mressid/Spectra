@@ -20,11 +20,11 @@ The look continues the store preview already in the admin
 
 ## 2. Tokens
 
-Defined once in `src/app/globals.css` (`@theme`). Use the Tailwind names, never raw hex.
+Defined once in `src/app/globals.css` (`@theme`); the full list with dark values is in [DESIGN_TOKENS.md](DESIGN_TOKENS.md). Use the Tailwind names, never raw hex.
 
 | Token | Value | Use |
 |---|---|---|
-| `ink` | `#111827` | Text, the primary button, a chosen option |
+| `ink` | `#1b2150` | Text, the primary button, a chosen option |
 | `muted` | `#6B7280` | Secondary text, captions |
 | `faint` | `#9CA3AF` | Old price (crossed out), unavailable option |
 | `line` | `#E5E7EB` | Borders, dividers |
@@ -36,8 +36,8 @@ Defined once in `src/app/globals.css` (`@theme`). Use the Tailwind names, never 
 | `sale` / `sale-soft` | `#B91C1C` / `#FEE2E2` | Discount badge (text / background), form errors |
 
 Also `on-ink` (text on an ink background), `raised` (cards, drawers, header) and `stock-soft` (accent
-background). Radii: `rounded-photo` 12 px (photos, cards), `rounded-control` 10 px (buttons, inputs,
-option boxes), `rounded-chip` 6 px.
+background). Radii: `rounded-photo` 18 px (photos, cards), `rounded-control` 5 px (buttons, inputs,
+option boxes), `rounded-chip` 4 px.
 
 **Dark theme.** Every token has a dark value (`src/app/globals.css`). The site follows the phone's setting
 until the visitor uses the theme toggle; the choice is stored in `localStorage` and applied before the
@@ -47,7 +47,7 @@ tiles) is white, and brand logos sit on a white tile.
 
 **Icons.** [lucide-react](https://lucide.dev) only, outline style, `strokeWidth` 1.8, 16–22 px, always
 `aria-hidden` next to a visible word or with an `aria-label` on the button. **No emoji and no symbol
-characters** (no ●, ★, ✓, 🚚) anywhere in the interface. Social networks are named in words (lucide has no
+characters** (no bullets, stars, ticks or pictograms) anywhere in the interface. Social networks are named in words (lucide has no
 brand logos).
 
 **Shared classes.** Buttons and fields use `ui.primary`, `ui.secondary`, `ui.quiet`, `ui.input`,
@@ -59,7 +59,7 @@ Colour carries meaning: green = available, amber = made to order, red = discount
 
 Two faces from `next/font` (self-hosted, `display: swap`): **Fraunces**, a soft serif, for page and section
 titles (`font-heading`), **Fira Sans** for everything else: prices, buttons (uppercase, tracked), the shop
-name (`font-display`, `font-sans`). The deep navy `ink` is the text, primary button and trust-band colour;
+name (`font-display`, `font-sans`). The deep navy `ink` is the text and primary button;
 photo tiles are rounded (18 px), and every product card ends with a full-width button. The shop name is uppercase and
 widely tracked. Centred names and prices under each photo. Sizes:
 
@@ -89,12 +89,12 @@ Sentence case everywhere. No uppercase headings, no letter spacing.
 |---|---|
 | **Product card** | Square photo (`aspect-square rounded-photo bg-surface`, `object-cover`), name `text-sm` one line, price (bold) with old price crossed out in `faint`, "Épuisé" in `muted` when sold out, small amber "Sur commande" when made to order. Whole card is one link. |
 | **Price** | `formatMoney()` always: `35,500 DT`. "à partir de" when variants differ in price. Discount badge `-20%` in `sale` on `sale-soft`, `rounded-chip`. |
-| **Availability line** | `● En stock` (green), `⏳ Sur commande · prêt en 48h` (amber), `Épuisé` (muted). |
+| **Availability line** | `En stock` (green, check icon), `Sur commande · prêt en 48h` (amber, clock icon), `Épuisé` (muted). |
 | **Primary button** | `bg-ink text-white rounded-control py-3 font-semibold w-full` on phones. One per screen: "Commander · paiement à la livraison". Disabled state `bg-surface text-muted`. |
 | **Secondary button** | `border border-ink rounded-control` (e.g. "Ajouter au panier" if both exist). |
 | **Option picker** | One row per option, named in the admin (Taille, Couleur, Capacité…): outlined boxes `border-field rounded-control px-3 py-2`; chosen = `bg-ink text-white border-ink`; impossible combination = `text-faint line-through`. Until every option is chosen, the order button names what is missing ("Choisissez taille et couleur"), from the option names. |
 | **Gallery** | Main photo square, thumbnails square in a row (scrollable on phones); swipe on phones. Variant photos replace the gallery when a variant is chosen. |
-| **Delivery line** | Under the button: "🚚 Livraison 7,000 DT · gratuite dès 150,000 DT · paiement à la livraison" from store settings. |
+| **Delivery line** | Under the button: "Livraison 7,000 DT · gratuite dès 150,000 DT · paiement à la livraison" from store settings. |
 | **Inputs** | Label above, `border-field rounded-control px-3 py-3 text-base`, focus ring `stock`. Error text under the field in `sale`. Phone input with `inputMode="tel"`. Governorate is a select of the 24 governorates. |
 | **Empty and error states** | One sentence and one action ("Votre panier est vide · Voir les nouveautés"). |
 

@@ -1846,6 +1846,45 @@ export interface components {
             languages?: string[];
             defaultLanguage?: string;
             footer?: components["schemas"]["FooterDto"];
+            theme?: components["schemas"]["ThemeDto"];
+        };
+        ThemeDto: {
+            logoUrl?: string;
+            logoDarkUrl?: string;
+            iconUrl?: string;
+            /** @enum {string} */
+            headerLogo?: "WIDE" | "SQUARE" | "NAME";
+            primaryColor?: string;
+            primaryColorDark?: string;
+            accentColor?: string;
+            accentColorDark?: string;
+            backgroundColor?: string;
+            backgroundColorDark?: string;
+            surfaceColor?: string;
+            surfaceColorDark?: string;
+            /** @enum {string} */
+            headingFont?: "SERIF" | "SANS";
+            /** @enum {string} */
+            corners?: "SHARP" | "SOFT" | "ROUND";
+        };
+        Theme: {
+            logoUrl?: string;
+            logoDarkUrl?: string;
+            iconUrl?: string;
+            /** @enum {string} */
+            headerLogo?: "WIDE" | "SQUARE" | "NAME";
+            primaryColor?: string;
+            primaryColorDark?: string;
+            accentColor?: string;
+            accentColorDark?: string;
+            backgroundColor?: string;
+            backgroundColorDark?: string;
+            surfaceColor?: string;
+            surfaceColorDark?: string;
+            /** @enum {string} */
+            headingFont?: "SERIF" | "SANS";
+            /** @enum {string} */
+            corners?: "SHARP" | "SOFT" | "ROUND";
         };
         Footer: {
             aboutText?: string;
@@ -1889,6 +1928,7 @@ export interface components {
             languages: string[];
             defaultLanguage: string;
             footer: components["schemas"]["Footer"];
+            theme: components["schemas"]["Theme"];
             /** Format: date-time */
             updatedAt?: string;
         };

@@ -126,3 +126,22 @@ body {
     outline: 2px solid var(--color-stock);
     outline-offset: 2px;
 }
+
+/* a dark-theme logo replaces the normal one in the dark theme (components/Logo.tsx) */
+.logo-dark {
+    display: none;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .logo-has-dark .logo-light {
+        display: none;
+    }
+    :root:not([data-theme="light"]) .logo-has-dark .logo-dark {
+        display: block;
+    }
+}
+:root[data-theme="dark"] .logo-has-dark .logo-light {
+    display: none;
+}
+:root[data-theme="dark"] .logo-has-dark .logo-dark {
+    display: block;
+}
