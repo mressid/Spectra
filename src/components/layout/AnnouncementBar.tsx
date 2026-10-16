@@ -3,12 +3,12 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { HomePage } from "@/lib/api/catalog";
+import type { Announcement } from "@/lib/api/catalog";
 
 const TONES: Record<string, string> = { NEUTRAL: "bg-ink text-on-ink", ACCENT: "bg-stock text-page", ALERT: "bg-sale text-page" };
 
 /** Top banner: one message at a time, changing every 5 s (never with reduced motion). */
-export function AnnouncementBar({ announcements }: { announcements: HomePage["announcements"] }) {
+export function AnnouncementBar({ announcements }: { announcements: Announcement[] }) {
     const [index, setIndex] = useState(0);
     useEffect(() => {
         if (announcements.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

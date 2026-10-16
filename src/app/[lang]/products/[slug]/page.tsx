@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ProductView } from "@/components/product/ProductView";
-import { getBrands, getProductBySlug, getProductDetails, getRelatedProducts, getReviews, getSitemap, getStoreSettings } from "@/lib/api/catalog";
+import { type Product, type ProductDetails, getBrand, getProductBySlug, getProductDetails, getRelatedProducts, getReviews, getSitemap, getStoreSettings, getVariantStock } from "@/lib/api/catalog";
 import type { Language } from "@/lib/api/client";
 import { richTextToHtml } from "@/lib/html";
 import { alternates } from "@/lib/i18n";
@@ -39,14 +40,14 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
     const words = getWords(lang);
     const product = await getProductBySlug(slug);
     if (!product) notFound();
-    const [details, related, reviews, settings, brands] = await Promise.all([
+    const [details, related, reviews, settings, brand] = await Promise.all([
         getProductDetails(product.id),
         getRelatedProducts(product.id),
         getReviews(product.id),
         getStoreSettings(),
-        getBrands(),
+        product.brandId ? getBrand(product.brandId) : null,
     ]);
-    const brandName = brands.find((brand) => brand.id === product.brandId)?.name;
+    const brandName = brand?.name;
     const category = details.categories[0];
     const site = process.env.SITE_URL ?? "http://localhost:3000";
     const rating = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : null;
@@ -69,19 +70,21 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 optionGroups={details.optionGroups}
                 photos={details.photos}
                 delivery={{ fee: settings.deliveryFee, freeFrom: settings.freeDeliveryThreshold ?? null }}
+                // not awaited: stock streams in after the cached page (partial prerendering)
+                stock={getVariantStock(product.id)}
             />
 
             {(descriptionHtml || details.specifications.length > 0) && (
                 <section className="mt-16 grid gap-10 border-t border-line pt-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16">
                     {descriptionHtml && (
                         <div>
-                            <h2 className="mb-4 font-display text-xl font-semibold tracking-tight">{words.description}</h2>
+                            <h2 className="mb-4 font-heading text-xl font-medium tracking-tight">{words.description}</h2>
                             <div className="prose-store max-w-none" dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
                         </div>
                     )}
                     {details.specifications.length > 0 && (
                         <div>
-                            <h2 className="mb-4 font-display text-xl font-semibold tracking-tight">{words.specifications}</h2>
+                            <h2 className="mb-4 font-heading text-xl font-medium tracking-tight">{words.specifications}</h2>
                             <dl className="divide-y divide-line border-y border-line text-sm">
                                 {details.specifications.map((row) => (
                                     <div key={row.name} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 py-2.5">
@@ -97,14 +100,14 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
             {product.contentBlocks.length > 0 && (
                 <section className="mt-12 space-y-8 border-t border-line pt-10">
-                    <h2 className="font-display text-xl font-semibold tracking-tight">{words.more}</h2>
+                    <h2 className="font-heading text-xl font-medium tracking-tight">{words.more}</h2>
                     {product.contentBlocks.map((block, index) =>
                         block.type === "TEXT" ? (
                             <div key={index} className="prose-store max-w-3xl" dangerouslySetInnerHTML={{ __html: richTextToHtml(block.content, block.format ?? "MARKDOWN") }} />
                         ) : block.type === "IMAGE" && block.url ? (
                             <figure key={index}>
                                 <div className="relative aspect-video overflow-hidden rounded-photo bg-surface">
-                                    <Image src={block.url} alt={block.caption ?? product.name} fill sizes="(min-width:1152px) 1152px, 100vw" className="object-cover" />
+                                    <Image src={block.url} alt={block.caption ?? product.name} fill sizes="(min-width:1400px) 1400px, 100vw" className="object-cover" />
                                 </div>
                                 {block.caption && <figcaption className="mt-2 text-sm text-muted">{block.caption}</figcaption>}
                             </figure>
@@ -118,7 +121,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             {reviews.length > 0 && rating != null && (
                 <section className="mt-12 border-t border-line pt-10">
                     <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1">
-                        <h2 className="font-display text-xl font-semibold tracking-tight">{words.reviews}</h2>
+                        <h2 className="font-heading text-xl font-medium tracking-tight">{words.reviews}</h2>
                         <Stars rating={rating} />
                         <span className="text-sm text-muted tabular-nums">{rating.toFixed(1)} · {words.reviewCount(reviews.length)}</span>
                     </div>
@@ -136,31 +139,42 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
             {related.length > 0 && (
                 <section className="mt-12 border-t border-line pt-10">
-                    <h2 className="mb-7 font-display text-[1.75rem] font-semibold tracking-tight">{words.related}</h2>
+                    <h2 className="mb-7 font-heading text-[1.75rem] font-medium tracking-tight">{words.related}</h2>
                     <ProductGrid lang={lang} products={related.slice(0, 8)} priorityCount={0} />
                 </section>
             )}
 
-            <JsonLd
-                data={{
-                    "@context": "https://schema.org",
-                    "@type": "Product",
-                    name: product.name,
-                    description: product.seoDescription ?? product.shortDescription ?? undefined,
-                    image: [product.thumbnailUrl, ...details.photos.map((photo) => photo.url)].filter(Boolean),
-                    sku: details.variants[0]?.sku,
-                    offers: details.variants.map((variant) => ({
-                        "@type": "Offer",
-                        sku: variant.sku,
-                        price: variant.price.toFixed(3),
-                        priceCurrency: "TND",
-                        availability: SCHEMA_AVAILABILITY[variant.availabilityStatus],
-                        url: `${site}/products/${product.slug}`,
-                    })),
-                    ...(rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating.toFixed(1), reviewCount: reviews.length } } : {}),
-                }}
-            />
+            <Suspense>
+                <ProductJsonLd product={product} details={details} rating={rating} reviewCount={reviews.length} site={site} />
+            </Suspense>
         </>
+    );
+}
+
+/** Product structured data; the availability of each offer is live stock, so it streams in after the cached page. */
+async function ProductJsonLd({ product, details, rating, reviewCount, site }: { product: Product; details: ProductDetails; rating: number | null; reviewCount: number; site: string }) {
+    const stock = await getVariantStock(product.id);
+    return (
+        <JsonLd
+            data={{
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: product.name,
+                description: product.seoDescription ?? product.shortDescription ?? undefined,
+                image: [product.thumbnailUrl, ...details.photos.map((photo) => photo.url)].filter(Boolean),
+                sku: details.variants[0]?.sku,
+                offers: details.variants.map((variant) => ({
+                    "@type": "Offer",
+                    sku: variant.sku,
+                    price: variant.price.toFixed(3),
+                    priceCurrency: "TND",
+                    // unknown stock (the stock call failed) is not claimed to be out of stock
+                    availability: SCHEMA_AVAILABILITY[stock[variant.id]?.availabilityStatus ?? "IN_STOCK"],
+                    url: `${site}/products/${product.slug}`,
+                })),
+                ...(rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating.toFixed(1), reviewCount } } : {}),
+            }}
+        />
     );
 }
 

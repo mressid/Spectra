@@ -9,13 +9,44 @@ This version differs from older Next.js tutorials (no `export const revalidate`,
 Pages are prerendered and cached; the store API refreshes exactly what changed.
 
 1. Every read of catalogue data is a `'use cache'` function in `src/lib/api/catalog.ts`, with
-   `cacheLife("catalog")` and `cacheTag(...)` (names in `src/lib/api/tags.ts`).
+   `cacheLife("catalog")` and `cacheTag(...)` (names in `src/lib/api/tags.ts`), tagged with exactly what it
+   returns: a list is tagged with the id of every product it shows.
 2. Profile `catalog` (next.config.ts): served from cache, rebuilt in the background at most hourly,
    kept up to 30 days. That hourly refresh is only a safety net.
 3. On an admin change, the API calls `POST /api/revalidate` with the changed tags →
-   `revalidateTag(tag, "max")` → the next visitor still gets the cached page instantly while it rebuilds.
-4. Anything per-customer (cart, checkout, order tracking) is never cached: client components, or server
-   code that runs per request inside `<Suspense>`.
+   `revalidateTag(tag, "max")` → only the pages carrying one of those tags go stale, and each is rebuilt
+   on its next visit while the old one is still served. Nothing is rebuilt ahead, and there is no full
+   rebuild: `next build` is only for deploying new code.
+
+### What refreshes what
+
+A page carries the tags of every cached read it makes, the header's and footer's included, and a cached
+read called inside another passes its tags up. So keep broad tags out of shared code:
+
+- The header and footer read `getStoreSettings`, `getCategories` and `getAnnouncements` only (tags
+  `settings`, `categories`, `announcements`): those changes really do show on every page. They must never
+  read `getHome`, whose product sections would tie every page to every product.
+- A product page is tagged with its own `product:<id>`, its options (`attribute:<id>`), its brand
+  (`brand:<id>`), its reviews, and the products in its "related" row. Never `lists`: editing one product
+  must not refresh the others.
+- Lists (category, collection, tag, search, homepage sections, sitemap) are tagged `lists`, their scope
+  (`category:<id>`…), `stock` when filtered on availability, and each product they show.
+- A slug lookup that finds nothing is tagged with the broad tag (`lists`, `collections`…) so the page
+  appears once something takes that slug; a found one only with its own id.
+
+| Admin change | Pages rebuilt on their next visit |
+|---|---|
+| Edit product X's description or photos | X's page, and the lists, homepage and "related" rows showing X |
+| Rename, hide, show or reprice product X | the above, and every list (not the other product pages) |
+| A sale changes X's stock | X's page, the pages showing X's card, lists filtered on "in stock" |
+| Rename option "Couleur" or value "Bleu" | product pages using that option |
+| Add X to category C | X's page, C's listing, the homepage |
+| Rename a category | every page (the menu shows it) |
+| Banner message, store settings | every page (the header and footer show them) |
+
+Known limits, covered by the hourly refresh: a new product joins other products' "related" rows only when
+those products change, and things shown on a schedule (banner messages, bundles with dates) appear or go
+when their time comes, not to the second.
 
 | Page | Route | Rendering |
 |---|---|---|
@@ -29,9 +60,15 @@ Pages are prerendered and cached; the store API refreshes exactly what changed.
 | Order confirmation, tracking | `/orders/[number]` | per request, `noindex` |
 | Sitemap, robots | `app/sitemap.ts`, `app/robots.ts` | cached (`products`, `categories`…) |
 
-**Stock and price freshness.** A cached product page may be a few seconds old after a sale. That is fine:
-the API rechecks price and stock when the order is placed and answers 409 with "X est épuisé", which the
-checkout shows. Do not make product pages dynamic to chase stock.
+**Stock is live, the rest of the product page is cached (partial prerendering).** `cacheComponents` makes
+the page a static shell with holes. The product, photos, options, prices, reviews and related products are
+cached and tagged as above. Stock (`stockQuantity`, `availabilityStatus`, `canBeOrdered`) is not: it is
+stripped from the cached `getProductDetails` and read by `getVariantStock` on every request, which the page
+passes as an unawaited promise to `ProductView`. Under `<Suspense>`, the availability line shows a skeleton
+and the option picker and order buttons are off (no option looks sold out) until it arrives; the JSON-LD
+offers' `availability` streams the same way. If the stock call fails the page lets the customer order and
+the API rechecks at checkout (409 "X est épuisé"). A sale therefore no longer needs to revalidate the product
+page; the `stock` tag still refreshes lists filtered on "in stock". Price stays cached and tagged.
 
 ## SEO
 

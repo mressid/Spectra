@@ -3,8 +3,8 @@
 import { Check, HandCoins, Minus, Plus, ShoppingBag, Truck } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import type { Media, Product, VariantWithOptions } from "@/lib/api/catalog";
+import { Suspense, use, useMemo, useState, type ReactNode } from "react";
+import type { Media, Product, StockByVariant, VariantWithOptions } from "@/lib/api/catalog";
 import type { Language } from "@/lib/api/client";
 import { cart } from "@/lib/cart";
 import { formatMoney } from "@/lib/format";
@@ -22,13 +22,32 @@ interface Props {
     optionGroups: { name: string; values: string[] }[];
     photos: Media[];
     delivery: { fee: number; freeFrom: number | null };
+    // live stock, streamed after the cached page: availability and the buy buttons wait for it
+    stock: Promise<StockByVariant>;
+}
+
+/** Stock once it has arrived, null while it is on its way. */
+type Stock = StockByVariant | null;
+
+function Resolved({ promise, children }: { promise: Promise<StockByVariant>; children: (stock: StockByVariant) => ReactNode }) {
+    return <>{children(use(promise))}</>;
+}
+
+/** Shows [fallback] (the same markup without stock) until the stock arrives, then [children] with it. */
+function WithStock({ promise, fallback, children }: { promise: Promise<StockByVariant>; fallback: ReactNode; children: (stock: StockByVariant) => ReactNode }) {
+    return (
+        <Suspense fallback={fallback}>
+            <Resolved promise={promise}>{children}</Resolved>
+        </Suspense>
+    );
 }
 
 /**
  * The interactive part of the product page: gallery, option picker, quantity, personalisation and the
- * order buttons. Everything it shows comes from the server render; choosing an option fetches nothing.
+ * order buttons. Everything but stock comes from the cached page; stock streams in (partial prerendering)
+ * and until it arrives the buttons are off and no option looks sold out. Choosing an option fetches nothing.
  */
-export function ProductView({ lang, brandName, product, variants, optionGroups, photos, delivery }: Props) {
+export function ProductView({ lang, brandName, product, variants, optionGroups, photos, delivery, stock }: Props) {
     const words = getWords(lang);
     const router = useRouter();
     // an option with a single value is chosen for the customer
@@ -46,11 +65,13 @@ export function ProductView({ lang, brandName, product, variants, optionGroups, 
         return variants.find((item) => optionGroups.every((group) => item.options[group.name] === chosen[group.name]));
     }, [chosen, optionGroups, product.hasVariants, variants]);
 
-    // a value is possible when some orderable variant has it together with the other chosen values
-    const isPossible = (name: string, value: string) =>
+    // a value is possible when some orderable variant has it together with the other chosen values;
+    // a variant the stock answer does not mention (the stock call failed) can be ordered: the API rechecks
+    const isOrderable = (item: VariantWithOptions, live: Stock) => !live || (live[item.id]?.canBeOrdered ?? true);
+    const isPossible = (name: string, value: string, live: Stock) =>
         variants.some(
             (item) =>
-                item.canBeOrdered &&
+                isOrderable(item, live) &&
                 item.options[name] === value &&
                 optionGroups.every((group) => group.name === name || !chosen[group.name] || item.options[group.name] === chosen[group.name]),
         );
@@ -60,8 +81,90 @@ export function ProductView({ lang, brandName, product, variants, optionGroups, 
         ...photos.map((photo) => ({ url: photo.url, alt: photo.altText ?? product.name })),
     ];
     const missing = optionGroups.filter((group) => !chosen[group.name]).map((group) => group.name);
-    const canOrder = Boolean(variant?.canBeOrdered);
-    const status = variant?.availabilityStatus ?? product.availability;
+
+    const statusOf = (live: Stock) => (variant && live?.[variant.id]?.availabilityStatus) || product.availability;
+    const canOrder = (live: Stock) => Boolean(variant && live && isOrderable(variant, live));
+
+    // option picker, quantity and order buttons: the part that depends on stock
+    const buy = (live: Stock) => (
+            <div className="mt-6 space-y-5 border-t border-line pt-6">
+                {optionGroups.map((group) => (
+                    <fieldset key={group.name}>
+                        <legend className="mb-2.5 text-sm">
+                            <span className="font-semibold">{group.name}</span>
+                            {chosen[group.name] && <span className="text-muted"> · {chosen[group.name]}</span>}
+                        </legend>
+                        <div className="flex flex-wrap gap-2">
+                            {group.values.map((value) => {
+                                const active = chosen[group.name] === value;
+                                const possible = isPossible(group.name, value, live);
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        aria-pressed={active}
+                                        onClick={() => {
+                                            setChosen((current) => ({ ...current, [group.name]: value }));
+                                            setAdded(false);
+                                        }}
+                                        className={`min-h-11 min-w-11 rounded-control border px-4 text-sm font-medium transition-colors ${
+                                            active
+                                                ? "border-ink bg-ink text-on-ink"
+                                                : possible
+                                                  ? "border-field hover:border-ink"
+                                                  : "border-line text-faint line-through"
+                                        }`}
+                                    >
+                                        {value}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </fieldset>
+                ))}
+
+                {product.allowPersonalization && (
+                    <label className="block">
+                        <span className={ui.label}>{words.personalisation}</span>
+                        {product.personalizationInstructions && <span className="mb-2 block text-sm text-muted">{product.personalizationInstructions}</span>}
+                        <input value={personalization} onChange={(event) => setPersonalization(event.target.value)} maxLength={100} className={ui.input} />
+                    </label>
+                )}
+
+                <div className="flex items-stretch gap-3">
+                    <div className="flex items-center rounded-control border border-field" role="group" aria-label={words.quantity}>
+                        <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.decrease} onClick={() => setQuantity((value) => Math.max(1, value - 1))}>
+                            <Minus size={16} aria-hidden />
+                        </button>
+                        <input
+                            aria-label={words.quantity}
+                            inputMode="numeric"
+                            value={quantity}
+                            onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value.replace(/\D/g, "")) || 1)))}
+                            className="h-12 w-9 bg-transparent text-center text-base tabular-nums focus:outline-none"
+                        />
+                        <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.increase} onClick={() => setQuantity((value) => Math.min(99, value + 1))}>
+                            <Plus size={16} aria-hidden />
+                        </button>
+                    </div>
+                    <button type="button" disabled={!canOrder(live)} onClick={addToCart} className={`${ui.secondary} flex-1`}>
+                        {added ? <Check size={18} aria-hidden /> : <ShoppingBag size={18} aria-hidden />}
+                        {added ? words.added : words.addToCart}
+                    </button>
+                </div>
+                <button
+                    type="button"
+                    disabled={!canOrder(live)}
+                    onClick={() => {
+                        addToCart();
+                        router.push(localPath(lang, "/checkout"));
+                    }}
+                    className={`${ui.primary} w-full`}
+                >
+                    {statusOf(live) === "OUT_OF_STOCK" && variant && live ? words.soldOut : missing.length ? words.choose(missing) : words.order}
+                </button>
+            </div>
+    );
 
     const addToCart = () => {
         if (!variant) return;
@@ -109,7 +212,7 @@ export function ProductView({ lang, brandName, product, variants, optionGroups, 
             {/* details */}
             <div className="min-w-0">
                 {brandName && <p className="mb-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted">{brandName}</p>}
-                <h1 className="font-display text-[2rem] font-semibold leading-[1.1] tracking-tight [text-wrap:balance] lg:text-[2.6rem]">{product.name}</h1>
+                <h1 className="font-heading text-[2rem] font-medium leading-[1.1] tracking-tight [text-wrap:balance] lg:text-[2.6rem]">{product.name}</h1>
                 <div className="mt-4">
                     {variant ? (
                         <Price lang={lang} price={variant.price} oldPrice={variant.compareAtPrice} large />
@@ -118,87 +221,15 @@ export function ProductView({ lang, brandName, product, variants, optionGroups, 
                     )}
                 </div>
                 <div className="mt-3">
-                    <Availability lang={lang} status={status} leadTimeDays={variant?.leadTimeDays ?? product.leadTimeDays} />
+                    <WithStock promise={stock} fallback={<div className="h-5 w-28 animate-pulse rounded bg-surface" aria-hidden />}>
+                        {(live) => <Availability lang={lang} status={statusOf(live)} leadTimeDays={variant?.leadTimeDays ?? product.leadTimeDays} />}
+                    </WithStock>
                 </div>
                 {product.shortDescription && <p className="mt-5 leading-relaxed text-muted">{product.shortDescription}</p>}
 
-                <div className="mt-6 space-y-5 border-t border-line pt-6">
-                    {optionGroups.map((group) => (
-                        <fieldset key={group.name}>
-                            <legend className="mb-2.5 text-sm">
-                                <span className="font-semibold">{group.name}</span>
-                                {chosen[group.name] && <span className="text-muted"> · {chosen[group.name]}</span>}
-                            </legend>
-                            <div className="flex flex-wrap gap-2">
-                                {group.values.map((value) => {
-                                    const active = chosen[group.name] === value;
-                                    const possible = isPossible(group.name, value);
-                                    return (
-                                        <button
-                                            key={value}
-                                            type="button"
-                                            aria-pressed={active}
-                                            onClick={() => {
-                                                setChosen((current) => ({ ...current, [group.name]: value }));
-                                                setAdded(false);
-                                            }}
-                                            className={`min-h-11 min-w-11 rounded-control border px-4 text-sm font-medium transition-colors ${
-                                                active
-                                                    ? "border-ink bg-ink text-on-ink"
-                                                    : possible
-                                                      ? "border-field hover:border-ink"
-                                                      : "border-line text-faint line-through"
-                                            }`}
-                                        >
-                                            {value}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </fieldset>
-                    ))}
-
-                    {product.allowPersonalization && (
-                        <label className="block">
-                            <span className={ui.label}>{words.personalisation}</span>
-                            {product.personalizationInstructions && <span className="mb-2 block text-sm text-muted">{product.personalizationInstructions}</span>}
-                            <input value={personalization} onChange={(event) => setPersonalization(event.target.value)} maxLength={100} className={ui.input} />
-                        </label>
-                    )}
-
-                    <div className="flex items-stretch gap-3">
-                        <div className="flex items-center rounded-control border border-field" role="group" aria-label={words.quantity}>
-                            <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.decrease} onClick={() => setQuantity((value) => Math.max(1, value - 1))}>
-                                <Minus size={16} aria-hidden />
-                            </button>
-                            <input
-                                aria-label={words.quantity}
-                                inputMode="numeric"
-                                value={quantity}
-                                onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value.replace(/\D/g, "")) || 1)))}
-                                className="h-12 w-9 bg-transparent text-center text-base tabular-nums focus:outline-none"
-                            />
-                            <button type="button" className="flex h-12 w-11 items-center justify-center" aria-label={words.increase} onClick={() => setQuantity((value) => Math.min(99, value + 1))}>
-                                <Plus size={16} aria-hidden />
-                            </button>
-                        </div>
-                        <button type="button" disabled={!canOrder} onClick={addToCart} className={`${ui.secondary} flex-1`}>
-                            {added ? <Check size={18} aria-hidden /> : <ShoppingBag size={18} aria-hidden />}
-                            {added ? words.added : words.addToCart}
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        disabled={!canOrder}
-                        onClick={() => {
-                            addToCart();
-                            router.push(localPath(lang, "/checkout"));
-                        }}
-                        className={`${ui.primary} w-full`}
-                    >
-                        {status === "OUT_OF_STOCK" && variant ? words.soldOut : missing.length ? words.choose(missing) : words.order}
-                    </button>
-                </div>
+                <WithStock promise={stock} fallback={buy(null)}>
+                    {buy}
+                </WithStock>
 
                 <ul className="mt-6 divide-y divide-line rounded-photo border border-line text-sm">
                     <li className="flex items-center gap-3 px-4 py-3">

@@ -1,12 +1,17 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
+import { cache } from "react";
 import { api, ApiError, type Language, type Page, type Schemas } from "./client";
 import { tags } from "./tags";
 
 /**
  * Cached reads of the public catalogue. Each function is cached ('use cache') under the "catalog"
- * profile (next.config.ts) and tagged, so an admin change refreshes it within seconds.
- * Arguments are part of the cache key: one entry per language, per slug, per filter.
+ * profile (next.config.ts) and tagged with exactly what it returns, so an admin change refreshes only the
+ * pages that show it. Arguments are part of the cache key: one entry per language, per slug, per filter.
+ *
+ * A cached read called inside another passes its tags up, and a page carries the tags of every read it
+ * makes: never call a read tagged with something broad ("lists", "brands") from a product page.
  *
  * The API only returns visible items to the public; isActive=true is still sent to be explicit.
  */
@@ -24,14 +29,35 @@ export type Bundle = Schemas["BundleResponseDto"];
 export type Review = Schemas["ReviewResponseDto"];
 export type Media = Schemas["MediaResponseDto"];
 export type Sitemap = Schemas["SitemapDto"];
+export type Announcement = Schemas["AnnouncementResponseDto"];
 
 const ALL = 500;
+
+/** Tags a list with each product it shows, so editing one refreshes the lists that show its card. */
+function tagProducts(products: { id: string }[]) {
+    const ids = [...new Set(products.map((product) => tags.product(product.id)))];
+    // cacheTag takes at most 128 tags per call
+    for (let start = 0; start < ids.length; start += 100) {
+        cacheTag(...ids.slice(start, start + 100));
+    }
+}
 
 export async function getHome(language: Language): Promise<HomePage> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.home, tags.products);
-    return api<HomePage>("/storefront/home", { language });
+    // sections can be built from any product list, category, brand or bundle; the footer is in the settings
+    cacheTag(tags.home, tags.lists, tags.settings, tags.categories, tags.brands, tags.bundles);
+    const home = await api<HomePage>("/storefront/home", { language });
+    tagProducts(home.sections.flatMap((section) => section.products ?? []));
+    return home;
+}
+
+/** The banner messages showing now, for the header of every page. */
+export async function getAnnouncements(): Promise<Announcement[]> {
+    "use cache";
+    cacheLife("catalog");
+    cacheTag(tags.announcements);
+    return (await api<Page<Announcement>>("/announcements?visibleNow=true&size=1")).content;
 }
 
 export async function getStoreSettings(): Promise<StoreSettings> {
@@ -50,22 +76,22 @@ export async function getGovernorates(): Promise<string[]> {
 export async function getSitemap(): Promise<Sitemap> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products, tags.categories, tags.collections, tags.bundles);
+    cacheTag(tags.lists, tags.categories, tags.collections, tags.bundles);
     return api<Sitemap>("/storefront/sitemap");
 }
 
 /* ---------- products ---------- */
 
-/** null when no visible product has this slug (the page then calls notFound()). */
+/**
+ * null when no visible product has this slug (the page then calls notFound()). A found product is tagged
+ * with its own id only; a missing one with "lists", so it appears once a product takes that slug.
+ */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products);
     const page = await api<Page<Product>>(`/products?slug=${encodeURIComponent(slug)}&isActive=true&size=1`);
     const product = page.content[0] ?? null;
-    if (product) {
-        cacheTag(tags.product(product.id));
-    }
+    cacheTag(product ? tags.product(product.id) : tags.lists);
     return product;
 }
 
@@ -74,7 +100,7 @@ export type ProductSort = "newest" | "price-asc" | "price-desc" | "name";
 export interface ProductQuery {
     categoryId?: string;
     collectionId?: string;
-    tag?: string;
+    tagId?: string;
     brandId?: string;
     q?: string;
     inStock?: boolean;
@@ -94,7 +120,12 @@ const SORTS: Record<ProductSort, [string, "ASC" | "DESC"]> = {
 export async function getProducts(query: ProductQuery = {}): Promise<Page<Product>> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products);
+    cacheTag(tags.lists);
+    if (query.categoryId) cacheTag(tags.category(query.categoryId));
+    if (query.collectionId) cacheTag(tags.collection(query.collectionId));
+    if (query.tagId) cacheTag(tags.tag(query.tagId));
+    if (query.brandId) cacheTag(tags.brand(query.brandId));
+    if (query.inStock) cacheTag(tags.stock);
     const [sortBy, sortDirection] = SORTS[query.sort ?? "newest"];
     const params = new URLSearchParams({
         isActive: "true",
@@ -105,23 +136,35 @@ export async function getProducts(query: ProductQuery = {}): Promise<Page<Produc
     });
     if (query.categoryId) params.set("categoryId", query.categoryId);
     if (query.collectionId) params.set("collectionId", query.collectionId);
-    if (query.tag) params.set("tag", query.tag);
+    if (query.tagId) params.set("tagId", query.tagId);
     if (query.brandId) params.set("brandId", query.brandId);
     if (query.q) params.set("nameContains", query.q);
     if (query.inStock) params.set("inStock", "true");
-    return api<Page<Product>>(`/products?${params}`);
+    const page = await api<Page<Product>>(`/products?${params}`);
+    tagProducts(page.content);
+    return page;
 }
 
-/** Up to 8 products the store suggests under this one (shared categories, tags, brand, price). */
+/**
+ * Up to 8 products the store suggests under this one (shared categories, tags, brand, price). Tagged with
+ * the products shown, not "lists": a new product joins the row when this one changes, or within the hour.
+ */
 export async function getRelatedProducts(productId: string): Promise<Product[]> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products, tags.product(productId));
-    return api<Product[]>(`/products/${productId}/related`);
+    cacheTag(tags.product(productId));
+    const related = await api<Product[]>(`/products/${productId}/related`);
+    tagProducts(related);
+    return related;
 }
 
-/** A variant with its options, named in the admin, e.g. { Taille: "M", Couleur: "Bleu" }. */
-export type VariantWithOptions = Variant & { options: Record<string, string> };
+/** What changes with every sale; read live, never cached (see getVariantStock). */
+export type VariantStock = Pick<Variant, "stockQuantity" | "availabilityStatus" | "canBeOrdered">;
+/** Live stock of a product's variants, by variant id. */
+export type StockByVariant = Record<string, VariantStock>;
+
+/** A variant with its options, named in the admin, e.g. { Taille: "M", Couleur: "Bleu" }; no stock, it is not cached. */
+export type VariantWithOptions = Omit<Variant, keyof VariantStock> & { options: Record<string, string> };
 
 export interface ProductDetails {
     variants: VariantWithOptions[];
@@ -132,27 +175,42 @@ export interface ProductDetails {
     categories: Category[];
 }
 
+/** The variant without its stock, which must not end up in the cache. */
+function withoutStock(variant: Variant): Omit<Variant, keyof VariantStock> {
+    const copy: Partial<Variant> = { ...variant };
+    delete copy.stockQuantity;
+    delete copy.availabilityStatus;
+    delete copy.canBeOrdered;
+    return copy as Omit<Variant, keyof VariantStock>;
+}
+
 /** Everything the product page needs besides the product itself, in parallel. */
 export async function getProductDetails(productId: string): Promise<ProductDetails> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products, tags.product(productId));
-    const [variantPage, mediaPage, attributes, categories, optionNames, optionValues] = await Promise.all([
+    cacheTag(tags.product(productId));
+    const [variantPage, mediaPage, attributes, categories] = await Promise.all([
         api<Page<Variant>>(`/variants?productId=${productId}&isActive=true&size=100&sortBy=price&sortDirection=ASC`),
         api<Page<Media>>(`/media?productId=${productId}&size=100&sortBy=sortOrder&sortDirection=ASC`),
         api<Schemas["ProductAttributeResponseDto"][]>(`/products/${productId}/attributes`),
         api<Schemas["ProductCategoryLinkResponseDto"][]>(`/products/${productId}/categories`),
-        getVariantOptionNames(),
-        getAttributeValues(),
     ]);
     const selections = await Promise.all(
         variantPage.content.map((variant) =>
             api<Schemas["VariantAttributeResponseDto"][]>(`/variant-attributes/variants/${variant.id}`),
         ),
     );
+    // only the options this product uses, each cached and tagged on its own (see getOption)
+    const options = await Promise.all(
+        [...new Set(selections.flat().map((selection) => selection.attributeId))].map(getOption),
+    );
+    // a specification's name is the attribute's: renaming it changes this page
+    if (attributes.length) cacheTag(...attributes.map((row) => tags.attribute(row.attributeId)));
+    const optionNames = options.map((option) => option.attribute).sort((a, b) => a.sortOrder - b.sortOrder);
+    const optionValues = options.flatMap((option) => option.values);
     const valueById = new Map(optionValues.map((value) => [value.id, value]));
     const variants = variantPage.content.map((variant, index) => ({
-        ...variant,
+        ...withoutStock(variant),
         options: Object.fromEntries(
             selections[index].flatMap((selection) => {
                 const name = optionNames.find((attribute) => attribute.id === selection.attributeId)?.name;
@@ -183,18 +241,34 @@ export async function getProductDetails(productId: string): Promise<ProductDetai
     };
 }
 
-async function getVariantOptionNames(): Promise<Schemas["AttributeResponseDto"][]> {
-    "use cache";
-    cacheLife("catalog");
-    cacheTag(tags.products);
-    return (await api<Page<Schemas["AttributeResponseDto"]>>(`/attributes?isVariantLevel=true&size=${ALL}&sortBy=sortOrder&sortDirection=ASC`)).content;
-}
+/**
+ * Stock of each variant, read from the API on every request: the one part of the product page that is
+ * not cached (partial prerendering). The page streams it into a <Suspense> hole in the cached shell.
+ * One call per request even when several parts of the page ask. A failed call answers {}: the page then
+ * lets the customer order, and the API rechecks stock when the order is placed.
+ */
+export const getVariantStock = cache(async (productId: string): Promise<StockByVariant> => {
+    await connection();
+    try {
+        const page = await api<Page<Variant>>(`/variants?productId=${productId}&isActive=true&size=100`);
+        return Object.fromEntries(
+            page.content.map(({ id, stockQuantity, availabilityStatus, canBeOrdered }) => [id, { stockQuantity, availabilityStatus, canBeOrdered }]),
+        );
+    } catch {
+        return {};
+    }
+});
 
-async function getAttributeValues(): Promise<Schemas["AttributeValueResponseDto"][]> {
+/** One option (Taille, Couleur…) with its values, shared by every product page that uses it. */
+async function getOption(attributeId: string): Promise<{ attribute: Schemas["AttributeResponseDto"]; values: Schemas["AttributeValueResponseDto"][] }> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products);
-    return (await api<Page<Schemas["AttributeValueResponseDto"]>>(`/attribute-values?size=5000&sortBy=sortOrder&sortDirection=ASC`)).content;
+    cacheTag(tags.attribute(attributeId));
+    const [attribute, values] = await Promise.all([
+        api<Schemas["AttributeResponseDto"]>(`/attributes/${attributeId}`),
+        api<Page<Schemas["AttributeValueResponseDto"]>>(`/attribute-values?attributeId=${attributeId}&size=${ALL}&sortBy=sortOrder&sortDirection=ASC`),
+    ]);
+    return { attribute, values: values.content };
 }
 
 export async function getReviews(productId: string): Promise<Review[]> {
@@ -221,22 +295,31 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 export async function getCollectionBySlug(slug: string): Promise<Collection | null> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.collections);
-    return (await api<Page<Collection>>(`/collections?slug=${encodeURIComponent(slug)}&isActive=true&size=1`)).content[0] ?? null;
+    const collection = (await api<Page<Collection>>(`/collections?slug=${encodeURIComponent(slug)}&isActive=true&size=1`)).content[0] ?? null;
+    // a missing slug waits for any collection change; a found one only for its own
+    cacheTag(collection ? tags.collection(collection.id) : tags.collections);
+    return collection;
 }
 
 export async function getTagBySlug(slug: string): Promise<Tag | null> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.tags);
-    return (await api<Page<Tag>>(`/tags?slug=${encodeURIComponent(slug)}&size=1`)).content[0] ?? null;
+    const tag = (await api<Page<Tag>>(`/tags?slug=${encodeURIComponent(slug)}&size=1`)).content[0] ?? null;
+    cacheTag(tag ? tags.tag(tag.id) : tags.tags);
+    return tag;
 }
 
-export async function getBrands(): Promise<Brand[]> {
+/** One brand, for a product page: tagged with that brand only, so other brands' changes leave it alone. */
+export async function getBrand(brandId: string): Promise<Brand | null> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.brands);
-    return (await api<Page<Brand>>(`/brands?size=${ALL}&sortBy=name&sortDirection=ASC`)).content;
+    cacheTag(tags.brand(brandId));
+    try {
+        return await api<Brand>(`/brands/${brandId}`);
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 404) return null;
+        throw error;
+    }
 }
 
 /* ---------- bundles ---------- */
@@ -244,12 +327,10 @@ export async function getBrands(): Promise<Brand[]> {
 export async function getBundleBySlug(slug: string): Promise<Bundle | null> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.bundles);
     const bundles = (await api<Page<Bundle>>(`/bundles?isActive=true&size=${ALL}`)).content;
     const bundle = bundles.find((item) => item.slug === slug) ?? null;
-    if (bundle) {
-        cacheTag(tags.bundle(bundle.id));
-    }
+    cacheTag(bundle ? tags.bundle(bundle.id) : tags.bundles);
+    if (bundle) tagProducts(bundle.items.map((item) => ({ id: item.productId })));
     return bundle;
 }
 
@@ -257,7 +338,8 @@ export async function getBundleBySlug(slug: string): Promise<Bundle | null> {
 export async function getBundleVariants(bundle: Bundle): Promise<Record<string, Variant[]>> {
     "use cache";
     cacheLife("catalog");
-    cacheTag(tags.products, tags.bundle(bundle.id));
+    cacheTag(tags.bundle(bundle.id));
+    tagProducts(bundle.items.map((item) => ({ id: item.productId })));
     const entries = await Promise.all(
         bundle.items.map(async (item) => [
             item.productId,

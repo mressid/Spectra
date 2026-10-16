@@ -96,17 +96,24 @@ Order statuses a customer can see: `PENDING` (new), `CONFIRMED`, `SHIPPED` (with
 
 ## Refreshing the cache
 
-Pages are cached (docs/RENDERING.md). The store API will call `POST /api/revalidate` on this website with
-header `X-Revalidate-Secret: <REVALIDATE_SECRET>` and body `{ "tags": [...] }` after each change (task API-3).
-Tag names are in `src/lib/api/tags.ts`:
+Pages are cached (docs/RENDERING.md). After each change the store API calls `POST /api/revalidate` on this
+website with header `X-Revalidate-Secret: <REVALIDATE_SECRET>` and body `{ "tags": [...] }`, batched every
+3 s (`StorefrontTags.kt` in the API). It names only what changed; the storefront tags each page with what it
+shows. Tag names are in `src/lib/api/tags.ts`:
 
-| Change in the admin | Tags to send |
+| Change in the admin | Tags sent |
 |---|---|
-| Product, its variants, photos, specifications, stock, an order taking stock | `product:<id>`, `products` |
-| Category / collection / tag / brand | `category:<id>` (etc.), `categories` / `collections` / `tags` / `brands`, `products` |
-| Bundle | `bundle:<id>`, `bundles`, `home` |
-| Banner, carousel, homepage section, footer | `home` |
-| Store settings (delivery fees, languages) | `settings`, `home` |
+| Product texts, photos, specifications, options of its variants | `product:<id>` |
+| Product created, deleted, renamed, slug changed, shown or hidden | `product:<id>`, `lists` |
+| Variant created, deleted or edited (price) | `product:<id>`, `lists` |
+| Stock (an order, a cancellation, a count) | `product:<id>`, `stock` |
+| Product added to or removed from a category / collection / tag | `product:<id>`, `category:<id>` (etc.), `home` |
+| Option or value renamed (Taille, Bleu) | `attribute:<id>` |
+| Category / collection / tag / brand edited | `category:<id>` (etc.), `categories` / `collections` / `tags` / `brands` |
+| Bundle | `bundle:<id>`, `bundles` |
+| Carousel, homepage section | `home` |
+| Banner message | `announcements` |
+| Store settings, footer (delivery fees, languages, contacts) | `settings` |
 | Review approved or removed | `reviews:<productId>` |
 
 ## Backend gaps
