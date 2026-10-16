@@ -1,7 +1,8 @@
 # Spectra
 
 The storefront of the shop template: a fast, SEO-friendly shop for small stores, Tunisia first
-(prices in TND, guest checkout, cash on delivery). French and English, light and dark theme.
+(prices in TND, guest checkout, cash on delivery). French and English, light and dark theme, and a look
+(logo, colours, title font, corners) that the owner sets from the admin.
 
 It is the front half of a two-part project:
 
@@ -23,6 +24,11 @@ the backend tells the storefront which pages to refresh whenever the owner chang
 - **Cart and checkout** without an account: promo codes, delivery fee per governorate, cash on delivery,
   confirmation with the server's totals, order tracking and cancellation.
 - **Languages**: every page under `/fr/…` and `/en/…`; product texts stay as written in the admin.
+- **Live stock**: the product page is cached, but stock streams in on every view (partial prerendering), so a
+  sold-out size shows at once.
+- **The shop's own look**: logo (wide or square icon, or just the name), brand and accent colours for each of
+  the light and dark themes, title font and corner roundness, set in the admin under Appearance and applied
+  on the next page view (see [docs/DESIGN_TOKENS.md](docs/DESIGN_TOKENS.md)).
 - **SEO**: static pages, Open Graph tags, `Product`, `BreadcrumbList` and `Store` structured data,
   hreflang, `sitemap.xml`, `robots.txt`.
 
@@ -31,7 +37,7 @@ the backend tells the storefront which pages to refresh whenever the owner chang
 | Concern | Choice |
 |---|---|
 | Framework | Next.js 16 (App Router, Cache Components), React 19, TypeScript |
-| Styling | Tailwind CSS 4 with design tokens, light and dark |
+| Styling | Tailwind CSS 4 with design tokens, light and dark, overridable per shop; Fraunces (titles) and Fira Sans |
 | Icons | lucide-react |
 | API types | generated from the backend's OpenAPI spec (`openapi-typescript`) |
 | Rich text | `marked` + `sanitize-html`, on the server |
@@ -62,6 +68,9 @@ running for a build too. Production: `npm run build && npm start`.
 | `REVALIDATE_SECRET` | 40 random characters | Shared with the backend so it can refresh pages |
 
 ### Connect the backend's page refresh
+
+The backend repo has the complete walk-through, with the production settings and a troubleshooting table:
+[docs/storefront-setup.md](https://github.com/mressid/Spactra-Base/blob/main/docs/storefront-setup.md).
 
 In the backend's `.env`, point it at this website with the same secret, then restart the API:
 
@@ -96,14 +105,15 @@ src/
   app/api/revalidate the endpoint the backend calls after changes
   components/        layout (header, footer), catalogue, product, cart and homepage sections
   lib/api/           API client, generated types, cached reads with their cache tags
-  lib/               words (fr/en), formatting, cart store, server actions
+  lib/               words (fr/en), formatting, cart store, server actions, theme.ts (the shop's look as CSS variables)
   proxy.ts           sends paths without a language to /fr or /en
-docs/                design system, rendering and SEO, API guide, roadmap
+docs/                design system and tokens, rendering and SEO, API guide, roadmap
 ```
 
 ## Documentation
 
-- [docs/DESIGN.md](docs/DESIGN.md): design system, tokens, icons and words
+- [docs/DESIGN.md](docs/DESIGN.md): design system, icons and words
+- [docs/DESIGN_TOKENS.md](docs/DESIGN_TOKENS.md): every colour, font and radius, and what the admin can change
 - [docs/RENDERING.md](docs/RENDERING.md): caching, page refresh, languages, SEO, performance budget
 - [docs/API.md](docs/API.md): the backend endpoints the storefront uses
 - [docs/ROADMAP.md](docs/ROADMAP.md): what is done and what comes next

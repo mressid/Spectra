@@ -50,15 +50,15 @@ when their time comes, not to the second.
 
 | Page | Route | Rendering |
 |---|---|---|
-| Home | `/` | cached (`home`, `products`) |
+| Home | `/` | cached (`home`, `lists`, and each product it shows) |
 | Category | `/categories/[slug]` | cached per slug and page; filters and sort in the URL (`?sort=price&page=2`) |
-| Collection / tag / section "see all" | `/collections/[slug]`, `/tags/[slug]`, `/sections/[slug]` | cached |
-| Product | `/products/[slug]` | cached per slug (`product:<id>`, `products`); `generateStaticParams` returns the slugs so they are built ahead |
+| Collection / tag | `/collections/[slug]`, `/tags/[slug]` | cached (a section "see all" page, `/sections/[slug]`, is not built yet) |
+| Product | `/products/[slug]` | cached per slug (`product:<id>`, its options, brand and reviews), with live stock in a `<Suspense>` hole (see below); `generateStaticParams` returns the slugs so they are built ahead |
 | Bundle | `/bundles/[slug]` | cached (`bundle:<id>`) |
 | Search | `/search?q=` | per request, `noindex` |
 | Cart, checkout | `/cart`, `/checkout` | client; cart in `localStorage`; prices re-read at checkout and the server has the final word |
-| Order confirmation, tracking | `/orders/[number]` | per request, `noindex` |
-| Sitemap, robots | `app/sitemap.ts`, `app/robots.ts` | cached (`products`, `categories`…) |
+| Order tracking | `/track` | per request, `noindex`; the confirmation is shown in place after ordering |
+| Sitemap, robots | `app/sitemap.ts`, `app/robots.ts` | cached (`lists`, `categories`…) |
 
 **Stock is live, the rest of the product page is cached (partial prerendering).** `cacheComponents` makes
 the page a static shell with holes. The product, photos, options, prices, reviews and related products are
@@ -69,6 +69,11 @@ and the option picker and order buttons are off (no option looks sold out) until
 offers' `availability` streams the same way. If the stock call fails the page lets the customer order and
 the API rechecks at checkout (409 "X est épuisé"). A sale therefore no longer needs to revalidate the product
 page; the `stock` tag still refreshes lists filtered on "in stock". Price stays cached and tagged.
+
+**The shop's look is cached with the settings.** The layout reads `getStoreSettings()` (tag `settings`), turns its
+`theme` into CSS variables with `src/lib/theme.ts` and writes them in a `<style>` in the page head; the header
+shows the logo or icon from it, and the icon becomes the page icon. Saving Appearance in the admin refreshes the
+`settings` tag, so the new look is on every page at its next view, with no rebuild.
 
 ## SEO
 

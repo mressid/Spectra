@@ -37,7 +37,7 @@ Never hand-write a type that exists in the schema: use `Schemas["ProductResponse
 | Call | Returns | Use |
 |---|---|---|
 | `GET /storefront/home` | `HomePageDto`: `announcements` (visible top-banner messages, in order), `sections` (homepage sections in order, each with its content already resolved), `footer` | Homepage, top banner and footer on every page |
-| `GET /store-settings` | delivery fee, free-delivery threshold, fee per governorate, `languages`, `defaultLanguage`, shop name, stamp duty | Delivery info on product page and cart; languages offered |
+| `GET /store-settings` | delivery fee, free-delivery threshold, fee per governorate, `languages`, `defaultLanguage`, shop name, stamp duty, `footer`, and `theme` (logo and icon URLs, `headerLogo`, light and dark colours, `headingFont`, `corners`; every field optional) | Delivery info on product page and cart; languages offered; the footer; the shop's look (`src/lib/theme.ts`) |
 | `GET /checkout/governorates` | the 24 Tunisian governorates, official spelling | Address form: a select, never free text |
 | `GET /storefront/sitemap` | `{ products, categories, collections, bundles }`, each `[{ slug, updatedAt }]`, visible only | `sitemap.xml`, `generateStaticParams` |
 
@@ -61,7 +61,7 @@ Homepage section types (`HomeSectionDto.type`), all in `sections[]`:
 | `GET /products/{id}/related` | Up to 8 suggestions: shared categories, then tags and brand, closest price. Already visible-only. |
 | `GET /products/{id}/attributes` | Specifications as rows (`attributeName`, `value`, `sortOrder`): show as "Matière : Argent 925" lines in `sortOrder`. |
 | `GET /products/{id}/categories` | The product's categories, for the breadcrumb. |
-| `GET /variants?productId=<id>&isActive=true` | Also `minPrice`, `maxPrice`. Variants: `price`, `compareAtPrice` (old price), `availabilityStatus` (`IN_STOCK`, `ON_ORDER`, `OUT_OF_STOCK`), `leadTimeDays`, `canBeOrdered`, `stockQuantity`. |
+| `GET /variants?productId=<id>&isActive=true` | Also `minPrice`, `maxPrice`. Variants: `price`, `compareAtPrice` (old price), `availabilityStatus` (`IN_STOCK`, `ON_ORDER`, `OUT_OF_STOCK`), `leadTimeDays`, `canBeOrdered`, `stockQuantity`. The product page reads the stock fields live on every view (`getVariantStock`, not cached) and everything else cached. |
 | `GET /variant-attributes/variants/{variantId}` | Options of a variant (Size: 52), to build the option picker; attribute names from `GET /attributes?isVariantLevel=true`. |
 | `GET /media?productId=<id>` / `?variantId=<id>` | Extra photos in `sortOrder`; the product's `thumbnailUrl` comes first. |
 | `GET /categories?isActive=true` | Tree via `parentId` (null = top level), `sortOrder`, `imageUrl`, SEO fields. `?slug=` for a category page. |
@@ -106,14 +106,14 @@ shows. Tag names are in `src/lib/api/tags.ts`:
 | Product texts, photos, specifications, options of its variants | `product:<id>` |
 | Product created, deleted, renamed, slug changed, shown or hidden | `product:<id>`, `lists` |
 | Variant created, deleted or edited (price) | `product:<id>`, `lists` |
-| Stock (an order, a cancellation, a count) | `product:<id>`, `stock` |
+| Stock (an order, a cancellation, a count) | `product:<id>`, `stock` (the product page itself reads stock live, so only cards and "in stock" lists need it) |
 | Product added to or removed from a category / collection / tag | `product:<id>`, `category:<id>` (etc.), `home` |
 | Option or value renamed (Taille, Bleu) | `attribute:<id>` |
 | Category / collection / tag / brand edited | `category:<id>` (etc.), `categories` / `collections` / `tags` / `brands` |
 | Bundle | `bundle:<id>`, `bundles` |
 | Carousel, homepage section | `home` |
 | Banner message | `announcements` |
-| Store settings, footer (delivery fees, languages, contacts) | `settings` |
+| Store settings, footer, theme (delivery fees, languages, contacts, logo, colours) | `settings` |
 | Review approved or removed | `reviews:<productId>` |
 
 ## Backend gaps

@@ -71,14 +71,14 @@ widely tracked. Centred names and prices under each photo. Sizes:
 | Body | `text-base` (16 px minimum on inputs: smaller makes iPhones zoom) |
 | Card name, captions | `text-sm`, `text-xs text-muted` |
 
-Sentence case everywhere. No uppercase headings, no letter spacing.
+Sentence case for titles and text. Buttons, the shop name and the language switch are uppercase and tracked; nothing else is.
 
 ## 4. Layout
 
 - Content width `max-w-[1400px] mx-auto px-4`. Product grids: 2 columns on phones, 3 on tablets, 4 on desktop, `gap-4`.
-- **Header**: top banner messages (from `/storefront/home`, rotating if several, `bg-ink text-white text-sm`),
-  then logo/shop name, search icon, cart icon with count. Category menu: drawer on phones, a row on desktop.
-- **Footer**: from `footer` in `/storefront/home`: about text, contact (phone, WhatsApp link, email),
+- **Header**: top banner messages (from `/announcements?visibleNow=true`, rotating if several, `bg-ink text-white text-sm`),
+  then the shop's logo (wide logo, square icon or the name, chosen in the admin under Appearance), search icon, cart icon with count. Category menu: drawer on phones, a row on desktop.
+- **Footer**: from `footer` in `/store-settings`: about text, contact (phone, WhatsApp link, email),
   social links, link columns, bottom text.
 - **Product page**: gallery left and details right on desktop (`1.1fr 1fr`), stacked on phones. On phones the
   order button sticks to the bottom of the screen once the in-page one scrolls away.
@@ -87,10 +87,10 @@ Sentence case everywhere. No uppercase headings, no letter spacing.
 
 | Component | Rules |
 |---|---|
-| **Product card** | Square photo (`aspect-square rounded-photo bg-surface`, `object-cover`), name `text-sm` one line, price (bold) with old price crossed out in `faint`, "Épuisé" in `muted` when sold out, small amber "Sur commande" when made to order. Whole card is one link. |
+| **Product card** | Square photo (`aspect-square rounded-photo bg-surface`, `object-cover`), name `text-sm` one line, price (bold) with old price crossed out in `faint`, "Épuisé" in `muted` when sold out, small amber "Sur commande" when made to order. The photo and text are one link; a full-width button ends the card ("Ajouter au panier" for a simple product in stock, "Choisissez…" otherwise, "Épuisé" when sold out). |
 | **Price** | `formatMoney()` always: `35,500 DT`. "à partir de" when variants differ in price. Discount badge `-20%` in `sale` on `sale-soft`, `rounded-chip`. |
-| **Availability line** | `En stock` (green, check icon), `Sur commande · prêt en 48h` (amber, clock icon), `Épuisé` (muted). |
-| **Primary button** | `bg-ink text-white rounded-control py-3 font-semibold w-full` on phones. One per screen: "Commander · paiement à la livraison". Disabled state `bg-surface text-muted`. |
+| **Availability line** | `En stock` (green, check icon), `Sur commande · prêt en 48h` (amber, clock icon), `Épuisé` (muted). Stock is live: a grey skeleton shows until it arrives, and the order buttons stay off meanwhile (docs/RENDERING.md). |
+| **Primary button** | `bg-ink text-on-ink rounded-control`, 13 px, uppercase, tracked (`ui.primary`), full width on phones. One per screen: "Commander · paiement à la livraison". Disabled state `bg-surface text-muted`. |
 | **Secondary button** | `border border-ink rounded-control` (e.g. "Ajouter au panier" if both exist). |
 | **Option picker** | One row per option, named in the admin (Taille, Couleur, Capacité…): outlined boxes `border-field rounded-control px-3 py-2`; chosen = `bg-ink text-white border-ink`; impossible combination = `text-faint line-through`. Until every option is chosen, the order button names what is missing ("Choisissez taille et couleur"), from the option names. |
 | **Gallery** | Main photo square, thumbnails square in a row (scrollable on phones); swipe on phones. Variant photos replace the gallery when a variant is chosen. |

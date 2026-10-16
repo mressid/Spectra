@@ -9,7 +9,7 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
 - [x] Next.js 16.3.8, TypeScript, Tailwind 4, App Router, `src/`, Cache Components on.
 - [x] API client (`src/lib/api/client.ts`), generated types (`schema.d.ts`), cached catalogue reads with
       tags (`catalog.ts`, `tags.ts`), `POST /api/revalidate` with a shared secret.
-- [x] Design tokens (`globals.css`), Inter, `formatMoney` / `formatLeadTime`.
+- [x] Design tokens (`globals.css`), `formatMoney` / `formatLeadTime`.
 - [x] Skeleton homepage: top banner, product sections, footer line (proves cache + images work).
 
 ## 1. Backend (done 2026-10-15, in ../accessories-store-system)
@@ -42,6 +42,19 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
 - [x] Sticky header with blur, phone menu panel, trust strip on the homepage, product cards with badges,
       redesigned product page, checkout, confirmation and order tracking.
 
+## Look and live stock (done 2026-10-16)
+
+- [x] Navy `ink`, Fraunces titles, Fira Sans, rounded tiles, uppercase buttons, full-width hero, 1400 px
+      container, a full-width button under every product card (docs/DESIGN.md, docs/DESIGN_TOKENS.md).
+- [x] **The shop's own look from the admin** (backend + admin + here): logo and square icon, header picture
+      choice, brand/accent/background/tile colours for light and dark, title font, corners. `src/lib/theme.ts`
+      writes CSS variables in the layout; the `settings` tag refreshes every page. Per-shop theme is done.
+- [x] **Live stock** with partial prerendering: the product page stays cached, stock streams into a
+      `<Suspense>` hole (`getVariantStock`); the JSON-LD availability streams too.
+- [x] Language switch is a page load (so the chosen theme survives); the layout's metadata no longer crashes on a
+      path that is not a language (`/.well-known/…`).
+- [x] Backend: schema diagrams per domain in `diagrams/` (generated), and `docs/storefront-setup.md` there.
+
 ## 7. Next
 
 - [ ] Lighthouse mobile on the production build for /, a category and a product page; fix what misses
@@ -54,9 +67,13 @@ on anything a later task should know. Tasks marked **API** happen in `../accesso
 - [ ] Order confirmation as its own page that survives a reload (today it is shown in place).
 - [ ] Generic template pass on the backend and admin: demo data, helper texts and examples still talk about
       jewellery (rings, "Silver 925", "engraving"). Replace with neutral examples.
+- [ ] Theme: a separate dark version of the square icon; the carousel text is white on a dark gradient, so a
+      per-slide text colour is needed for light, pastel hero images.
+- [ ] Optional: theme history or drafts (preview before publishing); the live theme stays in PostgreSQL.
 
 ## Later (ask the owner first)
 
-- English with translated product texts (`/fr`, `/en`, hreflang): needs bilingual product fields in the admin.
+- Translated product texts (the site is already bilingual under `/fr` and `/en`; product names and descriptions are
+  written once): needs bilingual product fields in the admin.
 - Customer accounts, wishlist, reviews from customers, online payment.
 - Hosting: one VPS (Next.js + Spring + Postgres + Mongo + MinIO) behind Nginx, Cloudflare in front.

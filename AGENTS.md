@@ -12,9 +12,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Customer website of a general-purpose shop template (small shops, Tunisia first). Never assume one kind
 of product: option names, categories and texts come from the admin. The API and admin live in
-`../accessories-store-system` (Spring Boot + React-Admin); this project only reads its public API.
+`../accessories-store-system` (Spring Boot + React-Admin, GitHub: Spactra-Base); this project only reads its public API.
 
-Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look and words),
+Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look and words), `docs/DESIGN_TOKENS.md` (tokens and what the admin can change),
 `docs/RENDERING.md` (caching and SEO), `docs/API.md` (endpoints).
 
 - **Data**: only through `src/lib/api/catalog.ts` (cached, tagged) or `api()` for per-request calls. Never
@@ -23,7 +23,10 @@ Read before working: `docs/ROADMAP.md` (what to do next), `docs/DESIGN.md` (look
 - **Server components by default.** `"use client"` only for interaction (cart, option picker, gallery,
   carousel, forms), as small and low in the tree as possible.
 - **Styling**: Tailwind with the tokens in `src/app/globals.css` (`text-muted`, `bg-ink`, `rounded-photo`…).
-  No raw hex in components, no UI component library.
+  No raw hex in components, no UI component library. The owner overrides some tokens from the admin
+  (`src/lib/theme.ts`), so a new colour or radius is a token, never a literal.
+- **Stock is live, everything else on the product page is cached**: never put `stockQuantity`,
+  `availabilityStatus` or `canBeOrdered` into a `'use cache'` function (docs/RENDERING.md).
 - **Images**: `next/image` with `alt` and `sizes`, never `<img>`.
 - **Languages**: every page is under `app/[lang]`; links go through `localPath(lang, path)`, words through
   `getWords(lang)` (add every new word in French and English), money through `formatMoney(amount, lang)`.
