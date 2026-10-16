@@ -8,7 +8,7 @@ It is the front half of a two-part project:
 | Part | Repository | What it does |
 |---|---|---|
 | **Spectra** (this repo, the storefront) | [mressid/Spectra](https://github.com/mressid/Spectra) | What customers see: homepage, catalogue, product pages, cart, checkout, order tracking |
-| **Backend + admin** | [mressid/accessories-store-system](https://github.com/mressid/accessories-store-system) | Spring Boot API, PostgreSQL, MinIO for photos, and the React-Admin dashboard where the shop owner manages products, orders, stock, homepage and settings |
+| **Backend + admin** | [mressid/Spactra-Base](https://github.com/mressid/Spactra-Base) | Spring Boot API, PostgreSQL, MinIO for photos, and the React-Admin dashboard where the shop owner manages products, orders, stock, homepage and settings |
 
 The storefront has no database of its own. Everything it shows comes from the backend's public API, and
 the backend tells the storefront which pages to refresh whenever the owner changes something.
@@ -38,7 +38,7 @@ the backend tells the storefront which pages to refresh whenever the owner chang
 
 ## Run it locally
 
-1. Start the backend first (see its [README](https://github.com/mressid/accessories-store-system#getting-started)):
+1. Start the backend first (see its [README](https://github.com/mressid/Spactra-Base#getting-started)):
    PostgreSQL, MinIO and the API on `http://localhost:8080`.
 2. Configure and start the storefront:
 
