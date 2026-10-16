@@ -57,7 +57,7 @@ export function Carousel({ slides, labels }: { slides: Slide[]; labels: { previo
                     const element = event.currentTarget;
                     setActive(Math.round(element.scrollLeft / Math.max(1, element.clientWidth)));
                 }}
-                className="flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-photo [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
                 {slides.map((slide, index) => (
                     <SlideView key={slide.id} slide={slide} priority={index === 0} label={`${labels.slide} ${index + 1} / ${slides.length}`} />
@@ -92,7 +92,7 @@ export function Carousel({ slides, labels }: { slides: Slide[]; labels: { previo
 
 function SlideView({ slide, priority, label }: { slide: Slide; priority: boolean; label: string }) {
     const alt = slide.altText ?? slide.title ?? "";
-    const common = { alt, priority, sizes: "(min-width: 1152px) 1152px, 100vw" };
+    const common = { alt, priority, sizes: "100vw" };
     const desktop = getImageProps({ ...common, src: slide.imageUrl, width: 1920, height: 768 }).props;
     const phone = getImageProps({ ...common, src: slide.mobileImageUrl ?? slide.imageUrl, width: 1080, height: 1350 }).props;
     const hasText = Boolean(slide.title || slide.description || slide.buttonLabel);
@@ -103,15 +103,18 @@ function SlideView({ slide, priority, label }: { slide: Slide; priority: boolean
                 <img {...phone} alt={alt} className="h-full w-full object-cover" style={{ width: "100%", height: "100%" }} />
             </picture>
             {hasText && (
-                <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 bg-gradient-to-t from-black/60 via-black/10 to-transparent p-6 pb-14 text-white sm:justify-center sm:bg-gradient-to-r sm:from-black/55 sm:via-black/15 sm:p-16">
-                    {slide.title && <p className="max-w-xl font-display text-[2rem] font-semibold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">{slide.title}</p>}
-                    {slide.description && <p className="max-w-md text-sm sm:text-base">{slide.description}</p>}
-                    {slide.buttonLabel && slide.linkUrl && (
-                        <span className="mt-2 inline-flex h-11 items-center gap-2 rounded-control bg-white px-6 font-display text-[15px] font-semibold tracking-wide text-black">
-                            {slide.buttonLabel}
-                            <ArrowRight size={16} aria-hidden />
-                        </span>
-                    )}
+                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/10 to-transparent text-white sm:items-center sm:bg-gradient-to-r sm:from-black/55 sm:via-black/15">
+                    {/* the text lines up with the page's column, whatever the screen width */}
+                    <div className="mx-auto flex w-full max-w-[1400px] flex-col items-start gap-3 px-4 pb-14 sm:px-6 sm:pb-0">
+                        {slide.title && <p className="max-w-xl font-heading text-[2rem] font-medium leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">{slide.title}</p>}
+                        {slide.description && <p className="max-w-md text-sm sm:text-base">{slide.description}</p>}
+                        {slide.buttonLabel && slide.linkUrl && (
+                            <span className="mt-2 inline-flex h-11 items-center gap-2 rounded-control bg-white px-6 font-display text-[13px] font-semibold uppercase tracking-[0.08em] text-black">
+                                {slide.buttonLabel}
+                                <ArrowRight size={16} aria-hidden />
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

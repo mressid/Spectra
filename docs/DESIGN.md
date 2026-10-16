@@ -57,10 +57,11 @@ Colour carries meaning: green = available, amber = made to order, red = discount
 
 ## 3. Typography
 
-Two faces from `next/font` (self-hosted, `display: swap`): **Fira Sans Condensed** for titles, prices
-and buttons (`font-display`), **Fira Sans** for everything else (`font-sans`). The shop name is set in
-the condensed face, uppercase, widely tracked. The look is a printed catalogue: square corners, grey
-photo tiles, centred names and prices under each photo, black buttons. Sizes:
+Two faces from `next/font` (self-hosted, `display: swap`): **Fraunces**, a soft serif, for page and section
+titles (`font-heading`), **Fira Sans** for everything else: prices, buttons (uppercase, tracked), the shop
+name (`font-display`, `font-sans`). The deep navy `ink` is the text, primary button and trust-band colour;
+photo tiles are rounded (18 px), and every product card ends with a full-width button. The shop name is uppercase and
+widely tracked. Centred names and prices under each photo. Sizes:
 
 | Use | Class |
 |---|---|
@@ -74,7 +75,7 @@ Sentence case everywhere. No uppercase headings, no letter spacing.
 
 ## 4. Layout
 
-- Content width `max-w-6xl mx-auto px-4`. Product grids: 2 columns on phones, 3 on tablets, 4 on desktop, `gap-4`.
+- Content width `max-w-[1400px] mx-auto px-4`. Product grids: 2 columns on phones, 3 on tablets, 4 on desktop, `gap-4`.
 - **Header**: top banner messages (from `/storefront/home`, rotating if several, `bg-ink text-white text-sm`),
   then logo/shop name, search icon, cart icon with count. Category menu: drawer on phones, a row on desktop.
 - **Footer**: from `footer` in `/storefront/home`: about text, contact (phone, WhatsApp link, email),

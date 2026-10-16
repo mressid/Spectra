@@ -26,9 +26,9 @@ export default async function TagPage({ params, searchParams }: PageProps<"/[lan
     return (
         <>
             <Breadcrumb lang={lang} crumbs={[{ name: tag.name, path: `/tags/${tag.slug}` }]} />
-            <h1 className="mb-6 font-display text-[2rem] font-semibold leading-tight tracking-tight">{tag.name}</h1>
+            <h1 className="mb-6 font-heading text-[2rem] font-medium leading-tight tracking-tight">{tag.name}</h1>
             <Suspense fallback={<GridSkeleton />}>
-                <ProductListing lang={lang} basePath={localPath(lang, `/tags/${tag.slug}`)} filter={{ tag: tag.slug }} searchParams={searchParams} />
+                <ProductListing lang={lang} basePath={localPath(lang, `/tags/${tag.slug}`)} filter={{ tagId: tag.id }} searchParams={searchParams} />
             </Suspense>
         </>
     );

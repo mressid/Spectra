@@ -13,7 +13,7 @@ export default async function CheckoutPage({ params }: PageProps<"/[lang]/checko
     const [governorates, settings] = await Promise.all([getGovernorates(), getStoreSettings()]);
     return (
         <>
-            <h1 className="mb-8 font-display text-[2rem] font-semibold leading-tight tracking-tight">{getWords(lang).checkout}</h1>
+            <h1 className="mb-8 font-heading text-[2rem] font-medium leading-tight tracking-tight">{getWords(lang).checkout}</h1>
             <CheckoutForm
                 lang={lang}
                 governorates={governorates}

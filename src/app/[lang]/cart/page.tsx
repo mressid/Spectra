@@ -11,7 +11,7 @@ export default async function CartPage({ params }: PageProps<"/[lang]/cart">) {
     const lang = (await params).lang as Language;
     return (
         <>
-            <h1 className="mb-6 font-display text-[2rem] font-semibold leading-tight tracking-tight">{getWords(lang).cart}</h1>
+            <h1 className="mb-6 font-heading text-[2rem] font-medium leading-tight tracking-tight">{getWords(lang).cart}</h1>
             <CartView lang={lang} />
         </>
     );

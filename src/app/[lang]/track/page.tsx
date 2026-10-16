@@ -11,7 +11,7 @@ export default async function TrackPage({ params }: PageProps<"/[lang]/track">) 
     const lang = (await params).lang as Language;
     return (
         <>
-            <h1 className="mb-8 font-display text-[2rem] font-semibold leading-tight tracking-tight">{getWords(lang).track}</h1>
+            <h1 className="mb-8 font-heading text-[2rem] font-medium leading-tight tracking-tight">{getWords(lang).track}</h1>
             <TrackOrder lang={lang} />
         </>
     );

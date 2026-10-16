@@ -31,7 +31,7 @@ function Heading({ section }: { section: HomeSection }) {
     if (!section.title) return null;
     return (
         <div className="mb-7">
-            <h2 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight [text-wrap:balance]">{section.title}</h2>
+            <h2 className="font-heading text-[1.75rem] font-medium leading-tight tracking-tight [text-wrap:balance]">{section.title}</h2>
             {section.subtitle && <p className="mt-1 text-muted">{section.subtitle}</p>}
         </div>
     );
@@ -42,7 +42,10 @@ function Section({ lang, section, first }: { lang: Language; section: HomeSectio
     switch (section.type) {
         case "CAROUSEL":
             return section.slides?.length ? (
-                <Carousel slides={section.slides} labels={{ previous: words.previous, next: words.next, slide: words.slide }} />
+                // edge to edge: breaks out of the page's centred column, and up to the header
+                <div className="-mt-6 ml-[calc(50%-50vw)] w-screen">
+                    <Carousel slides={section.slides} labels={{ previous: words.previous, next: words.next, slide: words.slide }} />
+                </div>
             ) : null;
         case "PRODUCTS": {
             const products = section.products ?? [];

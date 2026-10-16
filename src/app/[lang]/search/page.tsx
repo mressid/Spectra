@@ -37,7 +37,7 @@ async function SearchResults({ lang, searchParams }: { lang: Language; searchPar
     if (!q) return null;
     return (
         <>
-            <h1 className="mb-4 text-xl font-semibold">{getWords(lang).resultsFor(q)}</h1>
+            <h1 className="mb-4 text-xl font-medium">{getWords(lang).resultsFor(q)}</h1>
             <ProductListing lang={lang} basePath={localPath(lang, "/search")} filter={{ q }} searchParams={searchParams} />
         </>
     );

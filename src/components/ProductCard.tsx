@@ -8,10 +8,11 @@ import { getWords } from "@/lib/words";
 import { Availability } from "./Availability";
 import { Price } from "./Price";
 import { QuickAdd } from "./QuickAdd";
+import { ui } from "./ui";
 
 /**
  * Catalogue tile: the photo on a light grey ground, a badge in the corner, the name and price centred
- * under it. Simple products in stock get a quick "add to cart" button on the photo.
+ * under it, then a full-width button: "add to cart" for simple products in stock, else "choose…".
  */
 export function ProductCard({ lang, product, priority = false }: { lang: Language; product: Product; priority?: boolean }) {
     const discount = discountPercent(product.priceFrom, product.compareAtPriceFrom);
@@ -39,14 +40,6 @@ export function ProductCard({ lang, product, priority = false }: { lang: Languag
                     {discount && !soldOut && <span className="rounded-chip bg-ink px-1.5 py-0.5 font-display text-[11px] font-semibold text-on-ink">{discount}</span>}
                     {soldOut && <span className="rounded-chip bg-raised px-1.5 py-0.5 font-display text-[11px] font-semibold text-ink">{getWords(lang).soldOut}</span>}
                 </div>
-                {quickAdd && (
-                    <div className="absolute bottom-2 right-2 transition-opacity lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100">
-                        <QuickAdd
-                            lang={lang}
-                            line={{ variantId: product.defaultVariantId!, productSlug: product.slug, name: product.name, imageUrl: product.thumbnailUrl, unitPrice: product.priceFrom! }}
-                        />
-                    </div>
-                )}
             </div>
             <Link href={href} className="mt-3 block space-y-1 text-center">
                 <p className="line-clamp-2 text-sm leading-snug">{product.name}</p>
@@ -55,6 +48,18 @@ export function ProductCard({ lang, product, priority = false }: { lang: Languag
                     <div className="flex justify-center"><Availability lang={lang} status="ON_ORDER" leadTimeDays={product.leadTimeDays} compact /></div>
                 )}
             </Link>
+            <div className="mt-3">
+                {quickAdd ? (
+                    <QuickAdd
+                        lang={lang}
+                        line={{ variantId: product.defaultVariantId!, productSlug: product.slug, name: product.name, imageUrl: product.thumbnailUrl, unitPrice: product.priceFrom! }}
+                    />
+                ) : (
+                    <Link href={href} className={`${ui.secondary} h-11 w-full ${soldOut ? "pointer-events-none border-field text-faint" : ""}`} aria-disabled={soldOut}>
+                        {soldOut ? getWords(lang).soldOut : getWords(lang).chooseOne}
+                    </Link>
+                )}
+            </div>
         </div>
     );
 }

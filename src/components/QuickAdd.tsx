@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, Plus } from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import type { Language } from "@/lib/api/client";
 import { cart } from "@/lib/cart";
 import { getWords } from "@/lib/words";
 
-/** Adds a simple product (one variant) to the cart straight from its card. */
+/** The "add to cart" bar under a card: adds a simple product (one variant) straight from the catalogue. */
 export function QuickAdd({ lang, line }: {
     lang: Language;
     line: { variantId: string; productSlug: string; name: string; imageUrl?: string; unitPrice: number };
@@ -22,9 +22,9 @@ export function QuickAdd({ lang, line }: {
                 window.setTimeout(() => setAdded(false), 1800);
             }}
             aria-label={`${words.addToCart} : ${line.name}`}
-            className="flex h-9 w-9 items-center justify-center rounded-control bg-raised text-ink shadow-sm ring-1 ring-line transition hover:bg-ink hover:text-on-ink"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-control bg-ink font-display text-[13px] font-semibold uppercase tracking-[0.08em] text-on-ink transition-opacity hover:opacity-85"
         >
-            {added ? <Check size={17} aria-hidden /> : <Plus size={17} aria-hidden />}
+            {added ? <><Check size={16} aria-hidden />{words.added}</> : words.addToCart}
         </button>
     );
 }

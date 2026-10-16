@@ -40,7 +40,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
                 lang={lang}
                 crumbs={[...(parent ? [{ name: parent.name, path: `/categories/${parent.slug}` }] : []), { name: category.name, path: `/categories/${category.slug}` }]}
             />
-            <h1 className="mb-5 font-display text-[2rem] font-semibold leading-tight tracking-tight [text-wrap:balance]">{category.name}</h1>
+            <h1 className="mb-5 font-heading text-[2rem] font-medium leading-tight tracking-tight [text-wrap:balance]">{category.name}</h1>
             {children.length > 0 && (
                 <nav className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
                     {children.map((child) => (

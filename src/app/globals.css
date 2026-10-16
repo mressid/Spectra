@@ -6,10 +6,12 @@
  */
 @theme {
     --font-sans: var(--font-body), system-ui, sans-serif;
-    /* titles, prices, buttons: a condensed sans gives the catalogue its editorial look */
-    --font-display: var(--font-title), var(--font-body), system-ui, sans-serif;
+    /* page and section titles: a soft serif */
+    --font-heading: var(--font-title), Georgia, serif;
+    /* prices, buttons, the shop name */
+    --font-display: var(--font-body), system-ui, sans-serif;
 
-    --color-ink: #111827; /* text, primary button, chosen option */
+    --color-ink: #1b2150; /* text, primary button, chosen option, the trust band: a deep navy */
     --color-on-ink: #ffffff; /* text on an ink background */
     --color-muted: #5f6673; /* secondary text */
     --color-faint: #9aa1ab; /* old price, unavailable option */
@@ -24,9 +26,9 @@
     --color-sale: #b91c1c; /* discount badge text, errors */
     --color-sale-soft: #fdecec; /* discount badge background */
 
-    --radius-photo: 4px; /* product photos, cards: almost square, like a printed catalogue */
-    --radius-control: 3px; /* buttons, inputs, option boxes */
-    --radius-chip: 2px;
+    --radius-photo: 18px; /* product photos, cards: soft rounded tiles */
+    --radius-control: 5px; /* buttons, inputs, option boxes */
+    --radius-chip: 4px;
 }
 
 /* dark: follows the phone unless the visitor chose a theme (data-theme on <html>, set before paint) */
@@ -71,6 +73,8 @@
 }
 
 body {
+    /* full-width sections (the hero) are 100vw, which includes the scrollbar */
+    overflow-x: clip;
     background: var(--color-page);
     color: var(--color-ink);
 }
