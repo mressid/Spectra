@@ -89,10 +89,14 @@ variables that the layout puts in a `<style>` in the page head, after the defaul
 | `corners` | `SHARP` 2 / 2 / 2 px, `SOFT` 18 / 5 / 4 px, `ROUND` 28 / 999 / 999 px (photo / control / chip) | `SOFT` |
 | `logoUrl` / `logoDarkUrl` | the header shows the logo (wide, 4:1, at least 400 × 100 px) instead of the shop name; the dark logo replaces it in the dark theme | the shop name |
 | `headerLogo` | what the header shows: `WIDE` (the logo), `SQUARE` (the icon) or `NAME` (the shop name in text); empty = the wide logo if there is one, else the name; a choice whose picture is missing shows the name | automatic |
-| `iconUrl` | browser-tab and home-screen icon (square, 1:1, at least 512 × 512 px) | `app/favicon.ico` |
+| `navbarLayout` | where the header puts its parts: `LOGO_CENTER` (links, logo, search and cart), `LOGO_LEFT` (logo and links, then search and cart), `LOGO_LEFT_MENU_CENTER` (logo, links centred, search and cart), `LOGO_RIGHT` (search and cart, links, logo). Phones always have the menu button first and the logo | `LOGO_CENTER` |
+| `navShowSearch`, `navShowMenu`, `navSticky` | the search button, the category links on computers, and whether the header stays at the top while scrolling | all on |
+| `iconUrl` | the browser-tab icon (favicon) and home-screen icon, always this one whatever the header shows (exactly square, 1:1, at least 512 × 512 px; the admin refuses an upload of another shape); `src/lib/icons.ts` has the image optimizer make the 32, 128 and 256 px versions, written into the cached page, so a new icon shows without a rebuild | `app/favicon.ico` |
 
 Colours are `#rrggbb`; anything else is ignored. The dark theme's brand colour has to be light, because
 `ink` is also the text colour there. The admin page has three tabs (Brand: logo, icon, title font and corners; Light theme; Dark theme), previews both themes and warns when the brand colour
 does not read on the page (contrast under 4.5). Changing the theme refreshes every page (the `settings` tag).
+
+The shop name (store settings `shopName`, set under Appearance > Brand) is the text next to or instead of the logo, the footer title, the page-title suffix and the invoice header. Only when it is empty does the website use a generic word ("Boutique" / "Shop").
 
 To change the defaults of every shop, edit `src/app/globals.css` and this file.

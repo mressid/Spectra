@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { getStoreSettings } from "@/lib/api/catalog";
 import { isLanguage, LANGUAGES } from "@/lib/i18n";
+import { shopIcons } from "@/lib/icons";
 import { themeCss } from "@/lib/theme";
 import { getWords } from "@/lib/words";
 import "../globals.css";
@@ -26,8 +27,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     const shopName = settings.shopName || getWords(lang).shop;
     return {
         metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
-        // the shop's square icon (admin > Appearance) replaces the default favicon
-        ...(settings.theme?.iconUrl ? { icons: { icon: settings.theme.iconUrl, apple: settings.theme.iconUrl } } : {}),
+        // the shop's square icon (admin > Appearance) replaces the default favicon, resized for each use
+        icons: shopIcons(settings.theme?.iconUrl),
         title: { default: shopName, template: `%s · ${shopName}` },
         description: settings.footer.aboutText ?? getWords(lang).deliveryEverywhere,
         openGraph: { siteName: shopName, locale: lang === "fr" ? "fr_TN" : "en_US", type: "website" },

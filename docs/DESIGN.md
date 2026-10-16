@@ -47,8 +47,8 @@ tiles) is white, and brand logos sit on a white tile.
 
 **Icons.** [lucide-react](https://lucide.dev) only, outline style, `strokeWidth` 1.8, 16–22 px, always
 `aria-hidden` next to a visible word or with an `aria-label` on the button. **No emoji and no symbol
-characters** (no bullets, stars, ticks or pictograms) anywhere in the interface. Social networks are named in words (lucide has no
-brand logos).
+characters** (no bullets, stars, ticks or pictograms) anywhere in the interface. The one exception is the footer's social links: lucide has no brand logos, so they use the marks in
+`src/components/SocialIcon.tsx` (Simple Icons paths, in the text colour, in a round button with the network's name as its `aria-label`).
 
 **Shared classes.** Buttons and fields use `ui.primary`, `ui.secondary`, `ui.quiet`, `ui.input`,
 `ui.label`, `ui.card` from `src/components/ui.ts`.

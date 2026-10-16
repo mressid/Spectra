@@ -72,7 +72,7 @@ page; the `stock` tag still refreshes lists filtered on "in stock". Price stays 
 
 **The shop's look is cached with the settings.** The layout reads `getStoreSettings()` (tag `settings`), turns its
 `theme` into CSS variables with `src/lib/theme.ts` and writes them in a `<style>` in the page head; the header
-shows the logo or icon from it, and the icon becomes the page icon. Saving Appearance in the admin refreshes the
+shows the logo or icon from it arranged as the owner chose (`navbarLayout`), and the icon becomes the page icon. Saving Appearance in the admin refreshes the
 `settings` tag, so the new look is on every page at its next view, with no rebuild.
 
 ## SEO
